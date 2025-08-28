@@ -77,13 +77,13 @@ if df[COL_ANO].dropna().nunique() <= 1:
     df[COL_ANO] = df[COL_DATA].dt.year.astype("Int64")
     st.caption("ℹ️ 'Ano do Projeto' não varia na base — usando ano de **Data publicação** como fallback.")
 
-#  auxiliares mensais para a Task 1 - Primeira Analise
+#  Auxiliares mensais para a 1º Análise - Primeira Analise
 df = df.dropna(subset=[COL_DATA]).copy()
 df["_ano"] = df[COL_DATA].dt.year.astype(int)
 df["_mes"] = df[COL_DATA].dt.to_period("M")
 df["_mes_label"] = df["_mes"].dt.strftime("%b-%y").str.capitalize()
 
-#  TASK 1 — Linhas mensais - Analise Comparativo
+#  1º Análise -> — Linhas mensais - Analise Comparativo
 st.sidebar.header("Comparativo Mensal")
 anos = sorted(df["_ano"].unique().tolist())
 ano_sel = st.sidebar.selectbox("Filtro do Ano", anos, index=len(anos)-1)
@@ -138,7 +138,7 @@ else:
     with c3: st.metric("Média mensal — IA-UPE", fmt_brl(medias["Valor IA-UPE"]))
     with c4: st.metric(f"Pico do ano — {mes_pico_label}", fmt_brl(valor_pico))
 
-#  TASK 2 — Colunas empilhadas (Ano × Segmento) 
+#  2º Análise -> — Colunas empilhadas (Ano × Segmento) 
 st.markdown("---")
 st.subheader("📊 Projetos por Ano do Projeto e Segmento — Colunas Empilhadas")
 
@@ -189,4 +189,52 @@ else:
 
 
 
-#TASK 3 -> Continuando ....
+# 3º Análise -> Recebimentos anuais: Agência x Unidade x IA-UPE 
+
+st.markdown("---")
+st.subheader("📊 Recebimentos anuais: Agência x Unidade x IA-UPE")
+
+
+# Agregação anual usando "Ano do Projeto" ---> OBS: Eu já tratei no início do script
+anual = (
+    df.dropna(subset=[COL_ANO])[ [COL_ANO] + COLS_VAL ]
+      .groupby(COL_ANO, dropna=True)
+      .sum()
+      .reset_index()
+      .sort_values(COL_ANO)
+)
+
+if anual.empty:
+    st.info("Sem dados suficientes para a análise anual.")
+else:
+    # preparar dados em formato longo para o gráfico
+    anual_long = anual.melt(
+        id_vars=[COL_ANO],
+        value_vars=COLS_VAL,
+        var_name="Tipo",
+        value_name="Valor (R$)"
+    )
+    anual_long["Ano_str"] = anual_long[COL_ANO].astype(int).astype(str)
+    anos_ordem = sorted(anual_long["Ano_str"].unique().tolist(), key=int)
+
+    # Gráfico de colunas AGRUPADAS 
+    fig_t3 = px.bar(
+        anual_long,
+        x="Ano_str", y="Valor (R$)", color="Tipo",
+        barmode="group",
+        category_orders={"Ano_str": anos_ordem},
+        title="Recebimentos por ano — Agência x Unidade x IA-UPE"
+    )
+
+    fig_t3.update_layout(xaxis_title="Ano do Projeto", yaxis_title="Valor (R$)", hovermode="x unified")
+    fig_t3.update_yaxes(tickprefix="R$ ", separatethousands=True)
+    
+    st.plotly_chart(fig_t3, use_container_width=True)
+
+    # Tabelinha de Resumo 
+    with st.expander("📄 Ver tabela anual (Agência/Unidade/IA-UPE)"):
+        st.dataframe(
+            anual.set_index(COL_ANO),
+            use_container_width=True
+        )
+
