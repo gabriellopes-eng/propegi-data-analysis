@@ -18,10 +18,10 @@ PROPEGI-DATA-ANALYSIS/
 ├─ Projeto de Desenvolvimento Tecnologico/
 │  ├─ input/                              # dados brutos
 │  └─ output/
-│     ├─ dados_tratados.csv               # base tratada (usada pelo app)
+│     ├─ dados_tratados.csv               # base tratada (usada pelo Streamlit)
 │     └─ processar_dados_projetos.ipynb   # notebook de tratamento
 │
-├─ PROPEGI Financeiro/                    # módulo opcional
+├─ PROPEGI Financeiro/                    
 │  ├─ input/
 │  │  └─ Financas.json
 │  └─ output/
@@ -29,8 +29,8 @@ PROPEGI-DATA-ANALYSIS/
 │     └─ processar_dados_financeiro.ipynb
 │
 ├─ Streamlit/
-│  ├─ projeto.py                          # app principal (Tecnológico)
-│  └─ projeto_financeiro.py               # app opcional (Financeiro)
+│  ├─ projeto.py                          # app  (Tecnológico)
+│  └─ projeto_financeiro.py               # app  (Financeiro)
 │
 └─ README.md
 ```
