@@ -81,7 +81,7 @@ def grafico_empilhado(df_in, coluna_cor, titulo):
             y=total_mensal["Total_Mensal"],
             mode="lines+markers",
             name="Total Mensal",
-            line=dict(color="black", width=3),
+            line=dict(color="orange", width=3),
             marker=dict(size=8, symbol="circle"),
             yaxis="y2"
         )
