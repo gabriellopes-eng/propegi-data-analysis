@@ -1,21 +1,63 @@
-"""
-Página: Análise — Mensal por Taxa e Plano de Trabalho
-Mostra o somatório mensal de "Valor da folha" para um projeto (ou conjunto), separado por Taxa e por Plano de Trabalho.
-"""
 import sys
 from pathlib import Path
-
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 
 # Permitir import do módulo raiz
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from data_utils import carregar_financas_json, filtrar  # noqa: E402
+from data_utils import carregar_financas_json, filtrar, validar_financas_df  # noqa: E402
 
 CAMINHO_PADRAO_JSON = Path(__file__).resolve().parents[1] / "input" / "Financas.json"
 
 st.set_page_config(page_title="Análise Mensal — Taxa/Plano", layout="wide", initial_sidebar_state="collapsed")
+
+# Eu testando o estilo dos cards KPI 
+st.markdown(
+    """
+    <style>
+    .kpi-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 8px;
+      padding: 20px;
+      color: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .kpi-title {
+      font-size: 14px;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
+    .kpi-big {
+      font-size: 32px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    .kpi-small {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-top: 10px;
+    }
+    .kpi-small span {
+      opacity: 0.7;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+def kpi_card(title: str, big_value: str, small_label: str, small_value: str):
+    st.markdown(
+        f"""
+        <div class="kpi-card">
+          <div class="kpi-title">{title}</div>
+          <div class="kpi-big">{big_value}</div>
+          <div class="kpi-small"><span>{small_label}</span> {small_value}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
 st.header("◈ Análise Mensal por Taxa e Plano de Trabalho")
 
 caminho = st.text_input(
@@ -30,7 +72,15 @@ except Exception as e:
     st.error(f"Erro ao carregar JSON: {e}")
     st.stop()
 
-# Filtros
+# Validações simples do JSON 2024–2025
+issues = validar_financas_df(df)
+if issues:
+    for msg in issues:
+        st.warning(msg, icon="⚠️")
+else:
+    st.caption("Dados carregados e validados.")
+
+# Filtros 
 anos = sorted(df["Ano"].unique().tolist())
 projetos = sorted(df["Projetos"].unique().tolist())
 
@@ -48,7 +98,7 @@ if df_filt.empty:
     st.warning("Sem dados para os filtros escolhidos.")
     st.stop()
 
-# Ordenação temporal
+# Ordenacao temporal
 ordem = df_filt[["AnoMes", "ord_col"]].drop_duplicates().sort_values("ord_col")
 
 def grafico_empilhado(df_in, coluna_cor, titulo):
@@ -102,13 +152,10 @@ def grafico_empilhado(df_in, coluna_cor, titulo):
     )
     return fig
 
-colA, colB = st.columns(2)
-with colA:
-    st.subheader("Mensal por taxa")
-    st.plotly_chart(grafico_empilhado(df_filt, "Taxa", "Somatório mensal por taxa"), use_container_width=True)
-with colB:
-    st.subheader("Mensal por plano de trabalho")
-    st.plotly_chart(grafico_empilhado(df_filt, "Plano de Trabalho", "Somatório mensal por plano de trabalho"), use_container_width=True)
+st.subheader("Mensal por taxa")
+st.plotly_chart(grafico_empilhado(df_filt, "Taxa", "Somatório mensal por taxa"), width='stretch')
+st.subheader("Mensal por plano de trabalho")
+st.plotly_chart(grafico_empilhado(df_filt, "Plano de Trabalho", "Somatório mensal por plano de trabalho"), width='stretch')
 
 st.subheader("◆ Tabela mensal — Taxa × Plano de Trabalho")
 tabela = (
@@ -116,4 +163,41 @@ tabela = (
     .rename(columns={"Valor da folha": "Total"})
     .sort_values(["ord_col", "Taxa", "Plano de Trabalho"])
 )
-st.dataframe(tabela[["AnoMes", "Taxa", "Plano de Trabalho", "Total"]].style.format({"Total": "{:,.2f}"}), use_container_width=True, height=450)
+st.dataframe(tabela[["AnoMes", "Taxa", "Plano de Trabalho", "Total"]].style.format({"Total": "{:,.2f}"}), width='stretch', height=450)
+
+# Seção: 5 Acordos Mais Recentes
+st.divider()
+st.subheader("📋 Últimos 5 Acordos Firmados")
+
+# Buscar os 5 registros mais recentes do DataFrame ORIGINAL completo (sem filtros)
+df_completo = df.copy()
+ultimos_5 = df_completo.sort_values("ord_col", ascending=False).head(5)
+
+# Criar cards em colunas (5 cards lado a lado)
+cols = st.columns(5)
+
+for idx, (_, row) in enumerate(ultimos_5.iterrows()):
+    with cols[idx]:
+        # Pegar valores diretamente
+        valor = float(row['Valor da folha']) if row['Valor da folha'] else 0.0
+        sei = str(row.get('SEI', 'N/A'))
+        taxa = str(row.get('Taxa', 'N/A'))
+        plano = str(row.get('Plano de Trabalho', 'N/A'))
+        status = str(row.get('Status', 'N/A'))
+        projeto_nome = str(row['Projetos'])[:25] + "..." if len(str(row['Projetos'])) > 25 else str(row['Projetos'])
+        
+        # Formatar detalhes
+        detalhes = f"Taxa: {taxa} | Plano: {plano} | Status: {status} | SEI: {sei}"
+        
+        kpi_card(
+            title=f"📅 {row['AnoMes']}",
+            big_value=f"R$ {valor:,.2f}",
+            small_label=projeto_nome,
+            small_value=detalhes
+        )
+
+
+
+
+
+

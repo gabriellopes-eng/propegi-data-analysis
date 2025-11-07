@@ -1,17 +1,11 @@
-"""
-Página: Análise — Período completo por Taxa e Plano de Trabalho
-Mostra o somatório no período selecionado (todas as competências incluídas no filtro), com cortes por Taxa e por Plano de Trabalho,
-além de tabela por par (Taxa × Plano de Trabalho).
-"""
 import sys
 from pathlib import Path
-
 import streamlit as st
 import plotly.express as px
 
 # Permitir import do módulo raiz
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from data_utils import carregar_financas_json, filtrar  # noqa: E402
+from data_utils import carregar_financas_json, filtrar, validar_financas_df  # noqa: E402
 
 CAMINHO_PADRAO_JSON = Path(__file__).resolve().parents[1] / "input" / "Financas.json"
 
@@ -29,6 +23,14 @@ try:
 except Exception as e:
     st.error(f"Erro ao carregar JSON: {e}")
     st.stop()
+
+# Validações simples do JSON 2024–2025
+issues = validar_financas_df(df)
+if issues:
+    for msg in issues:
+        st.warning(msg, icon="⚠️")
+else:
+    st.caption("Dados carregados e validados.")
 
 # Filtros
 anos = sorted(df["Ano"].unique().tolist())
@@ -71,10 +73,10 @@ fig_plano.update_layout(yaxis_tickformat=",.2f", height=500)
 colA, colB = st.columns(2)
 with colA:
     st.subheader("Período por taxa")
-    st.plotly_chart(fig_taxa, use_container_width=True)
+    st.plotly_chart(fig_taxa, width='stretch')
 with colB:
     st.subheader("Período por plano de trabalho")
-    st.plotly_chart(fig_plano, use_container_width=True)
+    st.plotly_chart(fig_plano, width='stretch')
 
 st.subheader("◆ Tabela — Total do período por Taxa × Plano de Trabalho")
 tot_par = (
@@ -82,4 +84,35 @@ tot_par = (
     .rename(columns={"Valor da folha": "Total"})
     .sort_values(["Taxa", "Plano de Trabalho"]) 
 )
-st.dataframe(tot_par.style.format({"Total": "{:,.2f}"}), use_container_width=True, height=450)
+st.dataframe(tot_par.style.format({"Total": "{:,.2f}"}), width='stretch', height=450)
+
+# Construindo os cards dos últimos 5 acordos firmados
+st.divider()
+st.subheader("📋 Últimos 5 Acordos Firmados")
+
+ultimos_5 = df.sort_values("ord_col", ascending=False).head(5)
+
+cols = st.columns(5)
+
+for idx, (_, row) in enumerate(ultimos_5.iterrows()):
+    with cols[idx]:
+        detalhes = (
+            f"Taxa: {row.get('Taxa','N/A')} | Plano: {row.get('Plano de Trabalho','N/A')} | "
+            f"Status: {row.get('Status','N/A')} | SEI: {row.get('SEI','N/A')}"
+        )
+        projeto_nome = str(row['Projetos'])[:25] + "..." if len(str(row['Projetos'])) > 25 else str(row['Projetos'])
+        # Reuso de estilo do outro dashboard (definição da função pode estar em outro arquivo)
+        st.markdown(
+            f"""
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius:8px; padding:16px; color:white;">
+              <div style="font-size:12px; opacity:0.9;">📅 {row['AnoMes']}</div>
+              <div style="font-size:26px; font-weight:bold; margin:8px 0;">R$ {float(row['Valor da folha']):,.2f}</div>
+              <div style="font-size:11px; opacity:0.8; margin-bottom:6px;">{projeto_nome}</div>
+              <div style="font-size:11px; opacity:0.85;">{detalhes}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+
+

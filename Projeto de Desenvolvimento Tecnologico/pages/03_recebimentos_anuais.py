@@ -75,7 +75,7 @@ fig = px.bar(
     labels={"value": "R$ total no ano", "variable": "Órgão"},
 )
 fig.update_layout(xaxis=dict(type="category"))
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width='stretch')
 
 # Cards resumo
 _inject_css()
@@ -107,4 +107,4 @@ with c4:
 # Tabela
 st.markdown("---")
 with st.expander("◆ Ver tabela agregada"):
-    st.dataframe(df_group, use_container_width=True)
+    st.dataframe(df_group, width='stretch')

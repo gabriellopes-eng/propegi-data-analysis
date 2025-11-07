@@ -68,8 +68,8 @@ fig = px.imshow(
 fig.update_traces(hovertemplate="Projeto: %{y}<br>Mês/Ano: %{x}<br>Valor: R$ %{z:,.2f}<extra></extra>")
 fig.update_coloraxes(colorbar_title="Valor (R$)")
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width='stretch')
 
 st.subheader("◆ Tabela Resumida")
-st.dataframe(tabela.style.format("{:,.2f}"), use_container_width=True, height=400)
+st.dataframe(tabela.style.format("{:,.2f}"), width='stretch', height=400)
 

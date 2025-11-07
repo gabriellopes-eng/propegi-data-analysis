@@ -36,8 +36,8 @@ fig = px.bar(
     labels={"QtdProjetos": "Quantidade de Projetos"},
 )
 fig.update_layout(barmode="stack", xaxis=dict(type="category"))
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width='stretch')
 
 # Tabela
 with st.expander("◆ Ver tabela agregada"):
-    st.dataframe(df_group, use_container_width=True)
+    st.dataframe(df_group, width='stretch')

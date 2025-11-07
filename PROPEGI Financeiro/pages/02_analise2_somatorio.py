@@ -50,6 +50,6 @@ fig = px.bar(soma_projeto, x="Total", y="Projetos", orientation="h", text="Total
 fig.update_traces(texttemplate="R$ %{x:,.2f}", hovertemplate="Projeto: %{y}<br>Total: R$ %{x:,.2f}<extra></extra>")
 fig.update_layout(xaxis_tickformat=",.2f", margin=dict(l=10, r=10, t=30, b=10), height=600)
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width='stretch')
 st.subheader("◆ Tabela - Somatório por Projeto")
-st.dataframe(soma_projeto[["Projetos", "Total"]].style.format({"Total": "{:,.2f}"}), use_container_width=True, height=450)
+st.dataframe(soma_projeto[["Projetos", "Total"]].style.format({"Total": "{:,.2f}"}), width='stretch', height=450)

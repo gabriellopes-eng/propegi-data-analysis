@@ -49,7 +49,7 @@ with col_chart:
         title=None,
     )
     fig_bar.update_layout(xaxis=dict(type="category"))
-    st.plotly_chart(fig_bar, use_container_width=True)
+    st.plotly_chart(fig_bar, width='stretch')
 
 with col_side:
     st.subheader("❖ Distribuição por setor")
@@ -67,7 +67,7 @@ with col_side:
             hole=0.50,
             title=f"Distribuição por setor — {ano_sel}",
         )
-        st.plotly_chart(fig_pie, use_container_width=True)
+    st.plotly_chart(fig_pie, width='stretch')
 
 # --- Tabela ---
 with st.expander("◆ Ver tabela por ano e setor"):
@@ -76,4 +76,4 @@ with st.expander("◆ Ver tabela por ano e setor"):
                .fillna(0.0)
                .sort_index(axis=1)  # ordena colunas alfabeticamente
     )
-    st.dataframe(tabela, use_container_width=True)
+    st.dataframe(tabela, width='stretch')

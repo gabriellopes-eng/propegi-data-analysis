@@ -47,6 +47,6 @@ fig = px.bar(total_mensal, x="AnoMes", y="Total", text="Total", labels={"AnoMes"
 fig.update_traces(texttemplate="R$ %{y:,.2f}", hovertemplate="Mês/Ano: %{x}<br>Total (todos os projetos): R$ %{y:,.2f}<extra></extra>")
 fig.update_layout(xaxis_title="Mês/Ano", yaxis_title="Total (R$)", xaxis_tickangle=-45, yaxis_tickformat=",.2f", margin=dict(l=10, r=10, t=30, b=10), height=600)
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width='stretch')
 st.subheader("◆ Tabela - Total Mensal (Todos os projetos)")
-st.dataframe(total_mensal[["AnoMes", "Total"]].style.format({"Total": "{:,.2f}"}), use_container_width=True, height=450)
+st.dataframe(total_mensal[["AnoMes", "Total"]].style.format({"Total": "{:,.2f}"}), width='stretch', height=450)

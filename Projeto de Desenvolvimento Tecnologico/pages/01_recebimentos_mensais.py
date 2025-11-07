@@ -73,7 +73,7 @@ fig = px.line(
     labels={"value": "R$ no mês", "MesNome": "Mês", "variable": "Órgão"},
 )
 fig.update_layout(legend_title_text="Órgão", xaxis_tickangle=-45)
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width='stretch')
 
 # Resumo do ano: MÉDIA + TOTAL + PICO 
 _inject_css()
@@ -112,5 +112,5 @@ with st.expander("◆ Ver tabela mensal detalhada"):
     st.dataframe(
         df_mes[["Mes", "MesNome", "Valor agência", "Valor unidade", "Valor IA-UPE", "TotalMes"]]
         .rename(columns={"MesNome": "Mês"}),
-        use_container_width=True,
+        width='stretch',
     )
