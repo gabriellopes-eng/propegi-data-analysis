@@ -42,6 +42,13 @@ def kpi_card(title: str, big_value: str, small_label: str, small_value: str):
 
 st.set_page_config(layout="wide")
 st.title("◈ Recebimentos por setor (segmento)")
+st.markdown(
+    """
+**Visão Executiva:**
+
+A análise de recebimentos por setor detalha quanto cada segmento recebeu em cada ano, permitindo uma avaliação precisa do impacto financeiro por área de atuação. Ao cruzar informações de valores recebidos com os segmentos, a gestão pode identificar setores prioritários, avaliar o retorno dos investimentos e ajustar o planejamento estratégico conforme o desempenho de cada área. Esta abordagem fortalece a transparência, facilita a prestação de contas e potencializa a tomada de decisão baseada em dados.
+    """
+)
 st.caption("Comparativo de quanto cada segmento/setor recebeu em cada ano.")
 
 # Carregamento dos dados mais recentes do GitHub

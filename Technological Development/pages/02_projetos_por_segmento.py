@@ -14,6 +14,13 @@ from analise_utils.recebimentos_mensais_utils import (
 )
 
 st.title("◈ Projetos em desenvolvimento por segmento e ano")
+st.markdown(
+    """
+**Visão Executiva:**
+
+A análise de projetos por segmento revela a distribuição dos projetos de desenvolvimento tecnológico entre diferentes setores da economia. Ao agrupar os projetos por segmento e ano, esta visualização permite identificar áreas de maior atuação, potenciais oportunidades de expansão e setores estratégicos para investimento. A gestão pode utilizar essas informações para alinhar esforços, fortalecer parcerias e direcionar recursos para segmentos com maior impacto ou demanda, promovendo uma atuação mais eficiente e orientada por dados.
+    """
+)
 st.caption("Visualização da quantidade de projetos por segmento em cada ano.")
 
 # Carregar o backup mais recente do GitHub

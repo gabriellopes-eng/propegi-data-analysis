@@ -49,6 +49,13 @@ def kpi_card(title: str, big_value: str, small_label: str, small_value: str):
 
 # -------- Página principal --------
 st.title("◈ Recebimentos mensais por órgão (Agência, Unidade, IA-UPE)")
+st.markdown(
+    """
+**Visão Executiva:**
+
+Esta análise apresenta a evolução dos recebimentos mensais dos projetos de desenvolvimento tecnológico, detalhando os valores pactuados e repassados para Agência, Unidade e IA-UPE. O objetivo é fornecer uma visão clara e dinâmica do fluxo financeiro ao longo dos meses, permitindo à gestão identificar tendências, sazonalidades e possíveis variações nos repasses. Com KPIs e gráficos interativos, a equipe pode monitorar o desempenho financeiro, antecipar necessidades de ajuste e embasar decisões estratégicas com dados atualizados e confiáveis.
+    """
+)
 
 # Buscar o backup mais recente do GitHub
 dados_backups = listar_backups_disponiveis()

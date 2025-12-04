@@ -42,6 +42,13 @@ def kpi_card(title: str, big_value: str, small_label: str, small_value: str):
 
 st.set_page_config(layout="wide")
 st.title("◈ Recebimentos anuais por órgão (Agência, Unidade, IA-UPE)")
+st.markdown(
+    """
+**Visão Executiva:**
+
+Este quadro compara os recebimentos anuais entre Agência, Unidade e IA-UPE, destacando o desempenho financeiro de cada órgão ao longo dos anos. A análise facilita a identificação de padrões de crescimento, anos de pico e períodos de maior aporte financeiro. Com KPIs e gráficos comparativos, a gestão obtém uma visão consolidada dos resultados, podendo avaliar a efetividade das estratégias adotadas, justificar investimentos e planejar ações futuras com base em evidências concretas.
+    """
+)
 st.caption("Comparativo de quanto cada órgão recebeu em cada ano.")
 
 # Carregamento dos dados mais recentes do GitHub
