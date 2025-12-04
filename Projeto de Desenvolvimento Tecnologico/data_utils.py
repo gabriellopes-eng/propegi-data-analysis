@@ -1,28 +1,30 @@
 from __future__ import annotations
 from pathlib import Path
 import pandas as pd
+import requests
+import numpy as np
 
 # Raiz do projeto (pasta onde está este arquivo)
 BASE_DIR = Path(__file__).resolve().parent
 INPUT_DIR = BASE_DIR / "input"
 
 # Nome padrão do JSON (ajuste se necessário)
-DEFAULT_JSON_NAME = "Projetos de Desenvolvimento Tecnologico.json"
+DEFAULT_JSON_NAME = "Projetos de Desenvolvimento Tecnologico.json" # necessário apenas para os dados estáticos
 BRL_COLS = [
-    "valorPactuado",       # <--- NOVO: 19/11
+    "valorPactuado",
     "valorAgencia",
     "valorUnidade",
     "valorIAUPE",
 ]
 
-def input_path(name: str | Path = DEFAULT_JSON_NAME) -> Path:
+def input_path(name: str | Path = DEFAULT_JSON_NAME) -> Path: # necessário apenas para os dados estáticos
     """Retorna o caminho absoluto dentro de input/."""
     p = INPUT_DIR / name
     if not p.exists():
         raise FileNotFoundError(f"Arquivo não encontrado em: {p}")
     return p
 
-def carregar_json(path: str | Path | None = None) -> pd.DataFrame:
+def carregar_json(path: str | Path | None = None) -> pd.DataFrame: # necessário apenas para os dados estáticos
     """
     Lê o JSON (lista de objetos) e retorna um DataFrame.
     Se path for None, usa input/DEFAULT_JSON_NAME.
@@ -30,6 +32,33 @@ def carregar_json(path: str | Path | None = None) -> pd.DataFrame:
     if path is None:
         path = input_path(DEFAULT_JSON_NAME)
     return pd.read_json(path)
+
+def carregar_json_backup():
+    url = "https://raw.githubusercontent.com/propegi-upe/projects-automations/refs/heads/main/automation/data/backups/technological-development/backup-2025-12-02.json"
+
+    try:
+        response = requests.get(url)
+
+        # Verifica erro HTTP
+        response.raise_for_status()
+
+        # 1. Converte para JSON (Define a variável 'data')
+        data = response.json()
+
+        df = pd.DataFrame(data) 
+        
+        return df
+
+        # Converte para JSON
+        data = response.json()
+        print(data)
+
+    except requests.exceptions.HTTPError as e:
+        print(f"Erro HTTP ao obter o JSON: {e}")
+        return pd.DataFrame() # <--- RETORNA DATAFRAME VAZIO EM CASO DE ERRO HTTP
+    except Exception as e:
+        print(f"Erro ao obter o JSON: {e}")
+        return pd.DataFrame() # <--- RETORNA DATAFRAME VAZIO EM CASO DE ERRO HTTP
 
 def _br_to_float(serie: pd.Series) -> pd.Series:
     """
@@ -70,7 +99,7 @@ def preparar_datas(df: pd.DataFrame) -> pd.DataFrame:
             df[col] = pd.to_datetime(df[col], errors="coerce")
     # -------------- MODIFICAÇAO 19/11 (FIM) --------------
 
-    df["dataPublicacao"] = pd.to_datetime(df["dataPublicacao"], errors="coerce") # verificar se não é uma redundância
+    #df["dataPublicacao"] = pd.to_datetime(df["dataPublicacao"], errors="coerce") # verificar se não é uma redundância
     df["Ano"] = df["dataPublicacao"].dt.year
     df["Mes"] = df["dataPublicacao"].dt.month
     df["MesNome"] = df["dataPublicacao"].dt.strftime("%m/%b")
@@ -145,7 +174,6 @@ def brl(v: float) -> str:
     s = f"{v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     return f"R$ {s}"
     
-# -------------- MODIFICAÇAO 19/11 (INÍCIO) --------------
 # Função para filtrar, ordenar e retornar os 5 projetos mais recentes
 def acordos_recentes(df: pd.DataFrame) -> pd.DataFrame:
     df_copy = df.copy()
@@ -155,4 +183,65 @@ def acordos_recentes(df: pd.DataFrame) -> pd.DataFrame:
     
     # Retorna os últimos 5
     return df_ordenado.head(5)
-# -------------- MODIFICAÇAO 19/11 (FIM) --------------
+
+# -------- TRIMESTRE E SEMESTRE (INÍCIO) ----------
+
+# No arquivo data_utils.py
+
+def agregar_acordos_por_periodo(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Gera um DataFrame consolidado para exibição em TABELA (Trimestre, Semestre e Ano).
+    """
+    df_temp = df.copy()
+
+    # Validação básica
+    if 'inicioData' not in df_temp.columns or not pd.api.types.is_datetime64_any_dtype(df_temp['inicioData']):
+        return pd.DataFrame() 
+    
+    # Criação de colunas temporais
+    df_temp['Ano'] = df_temp['inicioData'].dt.year
+    df_temp['Mes'] = df_temp['inicioData'].dt.month
+    df_temp['Trimestre'] = df_temp['inicioData'].dt.quarter.astype(str) + 'º Trimestre'
+    df_temp['Semestre'] = np.where(df_temp['Mes'] <= 6, '1º Semestre', '2º Semestre')
+    
+    # Remove nulos essenciais
+    df_temp = df_temp.dropna(subset=['inicioData', 'nomeProjeto']).copy()
+
+    # Função auxiliar para listar nomes com ponto e vírgula (Evita erro de CSS)
+    def listar_nomes(serie: pd.Series) -> str:
+        return '; '.join(serie.sort_values().astype(str).tolist())
+
+    # Dicionário de Agregação
+    agg_dict = {
+        'nomeProjeto': [
+            ('Qtd Acordos', 'count'), 
+            ('Nomes dos Projetos', listar_nomes) 
+        ]
+    }
+    
+    resultados = []
+
+    # 1. Agregação por Trimestre
+    # Agrupa por 3 níveis, mas depois simplifica para visualização
+    df_trim = df_temp.groupby(['Ano', 'Semestre', 'Trimestre']).agg(agg_dict).reset_index()
+    df_trim.columns = ['Ano', 'Semestre', 'Período', 'Qtd Acordos', 'Nomes dos Projetos']
+    # Opcional: Adicionar o semestre ao nome do período para clareza
+    df_trim['Período'] = df_trim['Período'] + ' (' + df_trim['Semestre'] + ')'
+    resultados.append(df_trim[['Ano', 'Período', 'Qtd Acordos', 'Nomes dos Projetos']])
+
+    # 2. Agregação por Semestre
+    df_sem = df_temp.groupby(['Ano', 'Semestre']).agg(agg_dict).reset_index()
+    df_sem.columns = ['Ano', 'Período', 'Qtd Acordos', 'Nomes dos Projetos']
+    resultados.append(df_sem)
+
+    # 3. Agregação por Ano
+    df_ano = df_temp.groupby(['Ano']).agg(agg_dict).reset_index()
+    df_ano.columns = ['Ano', 'Qtd Acordos', 'Nomes dos Projetos']
+    df_ano['Período'] = 'Total Ano'
+    resultados.append(df_ano)
+
+    # Concatena e ordena
+    df_final = pd.concat(resultados, ignore_index=True)
+    return df_final.sort_values(by=['Ano', 'Qtd Acordos'], ascending=[False, False])
+
+# -------- TRIMESTRE E SEMESTRE (FIM) ----------

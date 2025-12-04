@@ -3,11 +3,9 @@ import plotly.express as px
 import numpy as np  # (não é usado aqui, mas pode ficar se for usar depois)
 
 from data_utils import (
-    carregar_json,
+    carregar_json_backup,         # <--- NOVO: 03/12
     normalizar_valores,
     preparar_datas,
-    input_path,         # 👈 resolve caminho dentro de input/
-    DEFAULT_JSON_NAME,  # 👈 nome padrão do JSON
 )
 
 # ---------- Utils de exibição ----------
@@ -52,7 +50,7 @@ st.title("◈ Recebimentos anuais por órgão (Agência, Unidade, IA-UPE)")
 st.caption("Comparativo de quanto cada órgão recebeu em cada ano.")
 
 # Carregamento
-df = carregar_json(input_path(DEFAULT_JSON_NAME))
+df = carregar_json_backup()
 df = normalizar_valores(df)
 df = preparar_datas(df)
 

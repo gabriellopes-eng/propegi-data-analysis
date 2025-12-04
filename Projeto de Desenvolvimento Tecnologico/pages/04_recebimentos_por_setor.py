@@ -3,18 +3,16 @@ import plotly.express as px
 import pandas as pd
 
 from data_utils import (          # <- import ABSOLUTO
-    carregar_json,
+    carregar_json_backup,         # <--- NOVO: 03/12
     normalizar_valores,
     preparar_datas,
-    input_path,                   # <- resolve caminho dentro de input/
-    DEFAULT_JSON_NAME,            # <- nome padrão do JSON
 )
 
 st.set_page_config(layout="wide")
 st.title("◈ Recebimentos por ano por Setor (Segmento)")
 
 # --- Carregamento e preparo ---
-df = carregar_json(input_path(DEFAULT_JSON_NAME))
+df = carregar_json_backup()
 df = normalizar_valores(df)
 df = preparar_datas(df)
 

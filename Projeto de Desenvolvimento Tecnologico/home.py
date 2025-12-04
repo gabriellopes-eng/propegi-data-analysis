@@ -1,13 +1,54 @@
 import streamlit as st
 
-st.set_page_config(page_title="Projeto de Desenvolvimento Tecnológico", layout="wide",initial_sidebar_state="collapsed") #->collapsed serve para esconder a sidebar
+# Adiciona um título ao app principal
+st.set_page_config(page_title="Projeto de Desenvolvimento Tecnológico", page_icon="../../images/upeLogo.png" ,layout="wide")
 
-st.title("Home")
-st.write("Use os links abaixo para navegar:")
+# Imagem centralizada na barra lateral
+with st.sidebar:
+    # Cria três colunas na barra lateral, sendo a segunda mais larga
+    col1, col2, col3 = st.columns([1, 3, 1])
 
-st.page_link("home.py", label="Home", icon="🏠")
-st.page_link("pages/01_recebimentos_mensais.py", label="Recebimentos mensais — Agência / Unidade / IA-UPE", icon="📅")
-st.page_link("pages/02_projetos_por_segmento.py", label="Projetos em desenvolvimento por segmento/ano", icon="📊")
-st.page_link("pages/03_recebimentos_anuais.py", label="Recebimentos anuais por órgão", icon="📈")
-st.page_link("pages/04_recebimentos_por_setor.py", label="Recebimentos por setor (segmento)", icon="🥧")
+    # Coloca a imagem na coluna do meio (col2)
+    with col2:
+        st.image("images/upeLogo.png", width=150)
 
+analise1 = st.Page(
+    page="pages/01_recebimentos_mensais.py",
+    title="Recebimentos mensais — Agência / Unidade / IA-UPE",
+    icon=":material/finance_mode:",
+    default=True, # Define esta como a página inicial
+)
+
+analise2 = st.Page(
+    page="pages/02_projetos_por_segmento.py",
+    title="Projetos em desenvolvimento por segmento/ano",
+    icon=":material/bar_chart_4_bars:",
+)
+
+analise3 = st.Page(
+    page="pages/03_recebimentos_anuais.py",
+    title="Recebimentos anuais por órgão",
+    icon=":material/bar_chart:",
+)
+
+analise4 = st.Page(
+    page="pages/04_recebimentos_por_setor.py",
+    title="Recebimentos por setor (segmento)",
+    icon=":material/pie_chart:",
+)
+
+analise5 = st.Page(
+    page="pages/05_analise_temporal.py",
+    title="Análise Temporal",
+    icon=":material/account_tree:",
+)
+
+# Cria a navegação com uma lista de páginas
+pg = st.navigation(
+    {
+        "Análises": [analise1, analise2, analise3, analise4, analise5],
+    }
+)
+
+# Executa a página selecionada
+pg.run()

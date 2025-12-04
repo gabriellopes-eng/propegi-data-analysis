@@ -3,13 +3,11 @@ import plotly.express as px
 import numpy as np
 
 from data_utils import (
-    carregar_json,
+    carregar_json_backup,         # <--- NOVO: 03/12
     normalizar_valores,
     preparar_datas,
     agrupar_mensal,
     kpis_anuais,
-    input_path,           # 👈 para resolver o caminho do JSON
-    DEFAULT_JSON_NAME,    # 👈 nome padrão do arquivo
 )
 
 # Utils de exibição 
@@ -52,7 +50,7 @@ def kpi_card(title: str, big_value: str, small_label: str, small_value: str):
 st.title("◈ Recebimentos mensais por órgão (Agência, Unidade, IA-UPE)")
 
 # Carregar e preparar dados 
-df = carregar_json(input_path(DEFAULT_JSON_NAME))
+df = carregar_json_backup()
 df = normalizar_valores(df)
 df = preparar_datas(df)
 
