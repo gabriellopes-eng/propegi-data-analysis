@@ -10,7 +10,12 @@ from data_utils import (
     kpis_anuais,
 )
 
-# Utils de exibição 
+ # Utils de exibição 
+st.title("◈ Recebimentos mensais por órgão (Agência, Unidade, IA-UPE)")
+st.info("""
+**Storytelling:**
+Esta análise apresenta a evolução dos recebimentos mensais dos projetos de desenvolvimento tecnológico. O objetivo é identificar padrões sazonais, tendências de crescimento ou queda ao longo do tempo, e fornecer subsídios para o planejamento financeiro e estratégico dos projetos.
+""")
 def _brl(v: float) -> str:
     return f"R$ {v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 

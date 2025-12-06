@@ -10,6 +10,12 @@ PASTA_INPUT = Path(__file__).resolve().parents[1] / "input"
 st.set_page_config(page_title="Heatmap Comparativo", layout="wide")
 st.header("📊 Comparativo de Valores por Projeto e Mês")
 
+
+st.info("""
+**Storytelling:**
+Esta análise apresenta um comparativo visual dos valores recebidos por projeto e por mês, facilitando a identificação de padrões, sazonalidades e projetos de maior relevância financeira ao longo do tempo.
+""")
+
 # carregar TODOS os JSONs da pasta input
 try:
     df = carregar_dados(PASTA_INPUT)

@@ -47,6 +47,10 @@ def kpi_card(title: str, big_value: str, small_label: str, small_value: str):
 # ---------- Página ----------
 st.set_page_config(layout="wide")
 st.title("◈ Recebimentos anuais por órgão (Agência, Unidade, IA-UPE)")
+st.info("""
+**Storytelling:**
+Esta análise apresenta o total de recebimentos anuais dos projetos, permitindo uma visão macro do desempenho financeiro ao longo dos anos. Com isso, é possível identificar anos de maior captação, oscilações e tendências de crescimento ou retração.
+""")
 st.caption("Comparativo de quanto cada órgão recebeu em cada ano.")
 
 # Carregamento

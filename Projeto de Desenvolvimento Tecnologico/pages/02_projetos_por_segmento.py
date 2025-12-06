@@ -12,6 +12,11 @@ from data_utils import (          # <- import ABSOLUTO
 )
 
 st.title("◈ Projetos em desenvolvimento por segmento e ano")
+st.info("""
+        
+**Storytelling:**
+Esta análise mostra a quantidade de projetos em desenvolvimento por segmento e ano. O objetivo é evidenciar quais segmentos concentram mais projetos ao longo do tempo, permitindo identificar áreas estratégicas, tendências de crescimento e oportunidades de diversificação.
+""")
 st.caption("Visualização da quantidade de projetos por segmento em cada ano.")
 
 # Carregamento

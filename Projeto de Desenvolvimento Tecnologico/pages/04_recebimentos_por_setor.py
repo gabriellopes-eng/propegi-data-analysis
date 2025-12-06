@@ -10,6 +10,10 @@ from data_utils import (          # <- import ABSOLUTO
 
 st.set_page_config(layout="wide")
 st.title("◈ Recebimentos por ano por Setor (Segmento)")
+st.info("""
+**Storytelling:**
+Esta análise detalha os recebimentos por setor (segmento) ao longo dos anos, permitindo identificar quais setores são mais relevantes em termos de captação de recursos. Isso auxilia na definição de estratégias para fortalecer setores-chave e diversificar fontes de receita.
+""")
 
 # --- Carregamento e preparo ---
 df = carregar_json_backup()

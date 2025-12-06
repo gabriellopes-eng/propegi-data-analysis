@@ -10,8 +10,15 @@ from data_utils import (
     agregar_acordos_por_periodo
 )
 
+
+
 st.set_page_config(layout="wide")
-st.title("Análise Temporal de Acordos")
+st.title("◈ Análise Temporal de Acordos")
+
+st.info("""
+**Storytelling:**
+Esta análise temporal permite visualizar a distribuição dos acordos ao longo do tempo, identificando períodos de maior ou menor atividade. Com isso, é possível compreender ciclos, sazonalidades e impactos de eventos externos na dinâmica dos projetos.
+""")
 
 # 1. CARREGAMENTO E LIMPEZA
 df = carregar_json_backup()
@@ -29,8 +36,8 @@ if df.empty or 'inicioData' not in df.columns:
 # -------------------------------------------------------------
 # VISUALIZAÇÃO DO TREEMAP
 # -------------------------------------------------------------
-st.subheader("1. Mapa de Árvore (Treemap)")
-st.caption("Distribuição hierárquica: Ano > Semestre > Trimestre")
+st.subheader("◈ Mapa de Árvore (Treemap)")
+st.caption("◈ Distribuição hierárquica: Ano > Semestre > Trimestre")
 
 # Criação de um DF exclusivo para o gráfico
 # Isso garante que as colunas Semestre e Trimestre existam sem depender da tabela agregada
@@ -62,7 +69,7 @@ st.markdown("---")
 # -------------------------------------------------------------
 # TABELA DE DETALHAMENTO (Usando a função do data_utils)
 # -------------------------------------------------------------
-st.subheader("2. Tabela Detalhada por Período")
+st.subheader("◈ Tabela Detalhada por Período")
 
 # Gera a tabela usando a função que simplificada no data_utils
 df_tabela = agregar_acordos_por_periodo(df)
