@@ -193,6 +193,52 @@ INPUT_DIR = BASE_DIR / "input"
 
 # Nome padrão do JSON (ajuste se necessário)
 DEFAULT_JSON_NAME = "Projetos de Desenvolvimento Tecnologico.json" # necessário apenas para os dados estáticos
+
+# --- Funções antigas para leitura local removidas/comentadas ---
+# DEFAULT_JSON_NAME = "Projetos de Desenvolvimento Tecnologico.json" # necessário apenas para os dados estáticos
+#
+# def input_path(name: str | Path = DEFAULT_JSON_NAME) -> Path: # necessário apenas para os dados estáticos
+#     """Retorna o caminho absoluto dentro de input/."""
+#     p = INPUT_DIR / name
+#     if not p.exists():
+#         raise FileNotFoundError(f"Arquivo não encontrado em: {p}")
+#     return p
+#
+# def carregar_json(path: str | Path | None = None) -> pd.DataFrame: # necessário apenas para os dados estáticos
+#     """
+#     Lê o JSON (lista de objetos) e retorna um DataFrame.
+#     Se path for None, usa input/DEFAULT_JSON_NAME.
+#     """
+#     if path is None:
+#         path = input_path(DEFAULT_JSON_NAME)
+#     return pd.read_json(path)
+#
+# def carregar_json_backup():
+#     url = "https://raw.githubusercontent.com/propegi-upe/projects-automations/refs/heads/main/automation/data/backups/technological-development/backup-2025-12-02.json"
+#
+#     try:
+#         response = requests.get(url)
+#
+#         # Verifica erro HTTP
+#         response.raise_for_status()
+#
+#         # 1. Converte para JSON (Define a variável 'data')
+#         data = response.json()
+#
+#         df = pd.DataFrame(data) 
+#
+#         return df
+#
+#         # Converte para JSON
+#         data = response.json()
+#         print(data)
+#
+#     except requests.exceptions.HTTPError as e:
+#         print(f"Erro HTTP ao obter o JSON: {e}")
+#         return pd.DataFrame() # <--- RETORNA DATAFRAME VAZIO EM CASO DE ERRO HTTP
+#     except Exception as e:
+#         print(f"Erro ao obter o JSON: {e}")
+#         return pd.DataFrame() # <--- RETORNA DATAFRAME VAZIO EM CASO DE ERRO HTTP
 BRL_COLS = [
     "valorPactuado",
     "valorAgencia",
