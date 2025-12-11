@@ -6,7 +6,7 @@ from data_utils import (
     carregar_ultimo_backup_json,  # dinâmico!
     normalizar_valores,
     preparar_datas,
-    imputar_data_projeto,
+    #imputar_data_projeto,
     agregar_acordos_por_periodo
 )
 
@@ -35,7 +35,7 @@ if df.empty or 'dataPublicacao' not in df.columns:
     st.stop()
 df = normalizar_valores(df)
 df = preparar_datas(df)
-df = imputar_data_projeto(df)
+#df = imputar_data_projeto(df)
 
 # Verifica se há dados para trabalhar
 if df.empty or 'inicioData' not in df.columns:
@@ -59,16 +59,29 @@ df_grafico['Trimestre'] = df_grafico['inicioData'].dt.quarter.astype(str) + 'º 
 # Agrupa para contagem
 df_treemap = df_grafico.groupby(['Ano', 'Semestre', 'Trimestre']).size().reset_index(name='Qtd Acordos')
 
+# Criação do Nível Raiz (1º nível hierárquico)
+df_treemap['Total'] = 'Total Geral de Projetos'
+
 if not df_treemap.empty:
+    # Ano: True (Crescente - 2025, 2024...)
+    # Semestre: True (Crescente - 1º, 2º)
+    # Trimestre: True (Crescente - 1º, 2º, 3º...)
+    df_treemap = df_treemap.sort_values(
+        by=['Ano', 'Semestre', 'Trimestre'], 
+        ascending=[True, True, True]
+    )
     fig = px.treemap(
         df_treemap,
-        path=['Ano', 'Semestre', 'Trimestre'], # Hierarquia garantida
+        path=['Total', 'Ano', 'Semestre', 'Trimestre'], # Hierarquia garantida
         values='Qtd Acordos',
         color='Qtd Acordos',
         color_continuous_scale='RdBu',
         title="Hierarquia de Acordos Firmados"
     )
-    fig.update_traces(textinfo="label+value") # Mostra nome e valor
+    fig.update_traces(
+        sort=False, # impede que o Plotly reordene os blocos do maior para o menor. Força a seguir a ordem cronológica do df.
+        textinfo="label+value",
+        hovertemplate='<b>%{label}</b><br>Total de Acordos: %{value}<extra></extra>') # Mostra nome e valor
     st.plotly_chart(fig, width='stretch')
 else:
     st.info("Dados insuficientes para o gráfico.")
@@ -80,18 +93,18 @@ st.markdown("---")
 # -------------------------------------------------------------
 st.subheader("◈ Tabela Detalhada por Período")
 
-# Gera a tabela usando a função que simplificada no data_utils
+# Criação da tabela
 df_tabela = agregar_acordos_por_periodo(df)
 
 if not df_tabela.empty:
     # Filtro Interativo
-    anos = sorted(df_tabela['Ano'].unique().tolist(), reverse=True)
+    anos = sorted(df_tabela['Ano'].astype(int).unique().tolist(), reverse=True)
     ano_filtro = st.selectbox("Filtrar Tabela por Ano:", ['Todos'] + anos)
 
     if ano_filtro != 'Todos':
         df_tabela = df_tabela[df_tabela['Ano'] == ano_filtro]
 
-    # Exibição Limpa
+    # Exibição da Tabela
     st.dataframe(
         df_tabela,
         column_config={

@@ -415,8 +415,6 @@ def acordos_recentes(df: pd.DataFrame) -> pd.DataFrame:
 
 # -------- TRIMESTRE E SEMESTRE (INÍCIO) ----------
 
-# No arquivo data_utils.py
-
 def agregar_acordos_por_periodo(df: pd.DataFrame) -> pd.DataFrame:
     """
     Gera um DataFrame consolidado para exibição em TABELA (Trimestre, Semestre e Ano).
@@ -427,16 +425,19 @@ def agregar_acordos_por_periodo(df: pd.DataFrame) -> pd.DataFrame:
     if 'inicioData' not in df_temp.columns or not pd.api.types.is_datetime64_any_dtype(df_temp['inicioData']):
         return pd.DataFrame() 
     
-    # Criação de colunas temporais
-    df_temp['Ano'] = df_temp['inicioData'].dt.year
-    df_temp['Mes'] = df_temp['inicioData'].dt.month
-    df_temp['Trimestre'] = df_temp['inicioData'].dt.quarter.astype(str) + 'º Trimestre'
-    df_temp['Semestre'] = np.where(df_temp['Mes'] <= 6, '1º Semestre', '2º Semestre')
-    
     # Remove nulos essenciais
     df_temp = df_temp.dropna(subset=['inicioData', 'nomeProjeto']).copy()
 
-    # Função auxiliar para listar nomes com ponto e vírgula (Evita erro de CSS)
+    if df_temp.empty:
+        return pd.DataFrame()
+    
+    # Criação de colunas temporais
+    df_temp['Ano'] = df_temp['inicioData'].dt.year.astype(int)
+    df_temp['Mes'] = df_temp['inicioData'].dt.month
+    df_temp['Trimestre'] = df_temp['inicioData'].dt.quarter.astype(int).astype(str) + 'º Trimestre'
+    df_temp['Semestre'] = np.where(df_temp['Mes'] <= 6, '1º Semestre', '2º Semestre')
+    
+    # Função auxiliar para listar nomes com ponto e vírgula
     def listar_nomes(serie: pd.Series) -> str:
         return '; '.join(serie.sort_values().astype(str).tolist())
 
@@ -454,7 +455,7 @@ def agregar_acordos_por_periodo(df: pd.DataFrame) -> pd.DataFrame:
     # Agrupa por 3 níveis, mas depois simplifica para visualização
     df_trim = df_temp.groupby(['Ano', 'Semestre', 'Trimestre']).agg(agg_dict).reset_index()
     df_trim.columns = ['Ano', 'Semestre', 'Período', 'Qtd Acordos', 'Nomes dos Projetos']
-    # Opcional: Adicionar o semestre ao nome do período para clareza
+    # Adiciona o semestre ao nome do período para clareza
     df_trim['Período'] = df_trim['Período'] + ' (' + df_trim['Semestre'] + ')'
     resultados.append(df_trim[['Ano', 'Período', 'Qtd Acordos', 'Nomes dos Projetos']])
 
