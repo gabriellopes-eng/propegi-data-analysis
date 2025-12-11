@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 from data_utils import (
-    carregar_json_backup,
+    carregar_ultimo_backup_json,  # dinâmico!
     normalizar_valores,
     preparar_datas,
     imputar_data_projeto,
@@ -20,10 +20,19 @@ st.info("""
 Esta análise temporal permite visualizar a distribuição dos acordos ao longo do tempo, identificando períodos de maior ou menor atividade. Com isso, é possível compreender ciclos, sazonalidades e impactos de eventos externos na dinâmica dos projetos.
 """)
 
-# 1. CARREGAMENTO E LIMPEZA
-df = carregar_json_backup()
 
-# Pipeline de Tratamento
+# 1. CARREGAMENTO E LIMPEZA (dinâmico)
+import streamlit as st
+df = carregar_ultimo_backup_json()
+if df is None or (hasattr(df, 'empty') and df.empty):
+    st.error("Backup não pôde ser carregado ou está vazio.")
+    st.stop()
+if isinstance(df, list):
+    import pandas as pd
+    df = pd.DataFrame(df)
+if df.empty or 'dataPublicacao' not in df.columns:
+    st.error("Dados inválidos ou coluna 'dataPublicacao' ausente no backup.")
+    st.stop()
 df = normalizar_valores(df)
 df = preparar_datas(df)
 df = imputar_data_projeto(df)

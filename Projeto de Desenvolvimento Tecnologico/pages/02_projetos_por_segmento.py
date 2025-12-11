@@ -2,13 +2,13 @@ import streamlit as st
 import plotly.express as px
 import pandas as pd
 
-from data_utils import (          # <- import ABSOLUTO
-    carregar_json_backup,         # <--- NOVO: 03/12
-    preparar_datas,
-    imputar_data_projeto,         # <--- NOVO: 26/11
-    acordos_recentes,             # <--- NOVO: 19/11
-    brl,                          # <--- NOVO: 19/11
-    normalizar_valores,           # <--- NOVO: 19/11
+from data_utils import (
+  carregar_ultimo_backup_json,  # dinâmico!
+  preparar_datas,
+  imputar_data_projeto,
+  acordos_recentes,
+  brl,
+  normalizar_valores,
 )
 
 st.title("◈ Projetos em desenvolvimento por segmento e ano")
@@ -19,12 +19,22 @@ Esta análise mostra a quantidade de projetos em desenvolvimento por segmento e 
 """)
 st.caption("Visualização da quantidade de projetos por segmento em cada ano.")
 
-# Carregamento
-# Ordem: Carregar -> Normalizar Valores (limpar moedas) -> Preparar Datas (limpar datas)
-df = carregar_json_backup() # <--- MODIFICADO: 02/12
-df = normalizar_valores(df) # <--- NOVO: 19/11
+
+# Carregamento dinâmico
+import streamlit as st
+df = carregar_ultimo_backup_json()
+if df is None or (hasattr(df, 'empty') and df.empty):
+  st.error("Backup não pôde ser carregado ou está vazio.")
+  st.stop()
+if isinstance(df, list):
+  import pandas as pd
+  df = pd.DataFrame(df)
+if df.empty or 'dataPublicacao' not in df.columns:
+  st.error("Dados inválidos ou coluna 'dataPublicacao' ausente no backup.")
+  st.stop()
+df = normalizar_valores(df)
 df = preparar_datas(df)
-df = imputar_data_projeto(df) # <--- NOVO: 26/11
+df = imputar_data_projeto(df)
 
 
 # Verifica se a coluna "segmento" existe

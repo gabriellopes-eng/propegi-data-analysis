@@ -3,7 +3,7 @@ import plotly.express as px
 import numpy as np
 
 from data_utils import (
-    carregar_json_backup,         # <--- NOVO: 03/12
+    carregar_ultimo_backup_json,  # dinâmico!
     normalizar_valores,
     preparar_datas,
     agrupar_mensal,
@@ -54,8 +54,18 @@ def kpi_card(title: str, big_value: str, small_label: str, small_value: str):
 # -------- Página principal --------
 st.title("◈ Recebimentos mensais por órgão (Agência, Unidade, IA-UPE)")
 
-# Carregar e preparar dados 
-df = carregar_json_backup()
+# Carregar e preparar dados (backup dinâmico)
+import streamlit as st
+df = carregar_ultimo_backup_json()
+if df is None or (hasattr(df, 'empty') and df.empty):
+    st.error("Backup não pôde ser carregado ou está vazio.")
+    st.stop()
+if isinstance(df, list):
+    import pandas as pd
+    df = pd.DataFrame(df)
+if df.empty or 'dataPublicacao' not in df.columns:
+    st.error("Dados inválidos ou coluna 'dataPublicacao' ausente no backup.")
+    st.stop()
 df = normalizar_valores(df)
 df = preparar_datas(df)
 

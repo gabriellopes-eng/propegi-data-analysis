@@ -3,7 +3,7 @@ import plotly.express as px
 import numpy as np  # (não é usado aqui, mas pode ficar se for usar depois)
 
 from data_utils import (
-    carregar_json_backup,         # <--- NOVO: 03/12
+    carregar_ultimo_backup_json,  # dinâmico!
     normalizar_valores,
     preparar_datas,
 )
@@ -54,7 +54,16 @@ Esta análise apresenta o total de recebimentos anuais dos projetos, permitindo 
 st.caption("Comparativo de quanto cada órgão recebeu em cada ano.")
 
 # Carregamento
-df = carregar_json_backup()
+df = carregar_ultimo_backup_json()
+if df is None or (hasattr(df, 'empty') and df.empty):
+    st.error("Backup não pôde ser carregado ou está vazio.")
+    st.stop()
+if isinstance(df, list):
+    import pandas as pd
+    df = pd.DataFrame(df)
+if df.empty or 'dataPublicacao' not in df.columns:
+    st.error("Dados inválidos ou coluna 'dataPublicacao' ausente no backup.")
+    st.stop()
 df = normalizar_valores(df)
 df = preparar_datas(df)
 

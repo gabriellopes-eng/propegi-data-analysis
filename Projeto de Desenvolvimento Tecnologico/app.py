@@ -4,13 +4,19 @@ import streamlit as st
 st.set_page_config(page_title="Projeto de Desenvolvimento Tecnológico", page_icon="../../images/upeLogo.png" ,layout="wide")
 
 # Imagem centralizada na barra lateral
+import os
 with st.sidebar:
     # Cria três colunas na barra lateral, sendo a segunda mais larga
     col1, col2, col3 = st.columns([1, 3, 1])
 
-    # Coloca a imagem na coluna do meio (col2)
+    # Caminho robusto para a imagem
+    logo_path = os.path.join(os.path.dirname(__file__), '..', 'images', 'upeLogo.png')
+    # Coloca a imagem na coluna do meio (col2), se existir
     with col2:
-        st.image("images/upeLogo.png", width=150)
+        if os.path.exists(logo_path):
+            st.image(logo_path, width=150)
+        else:
+            st.warning("Logo da UPE não encontrado em images/upeLogo.png")
 
 analise1 = st.Page(
     page="pages/01_recebimentos_mensais.py",
