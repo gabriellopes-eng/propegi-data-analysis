@@ -38,3 +38,6 @@ if __name__ == "__main__":
             print("Nenhum registro encontrado no JSON.")
     except Exception as e:
         print(f"Erro ao carregar dados do backup: {e}")
+
+#cd '.\Projeto de Desenvolvimento Tecnologico\'
+#python test_backup.py - Pelo Terminal. Ou so rodar no ambiente de desenvolvimento.
