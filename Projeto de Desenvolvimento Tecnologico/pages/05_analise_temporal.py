@@ -48,40 +48,42 @@ if df.empty or 'inicioData' not in df.columns:
 st.subheader("◈ Mapa de Árvore (Treemap)")
 st.caption("◈ Distribuição hierárquica: Ano > Semestre > Trimestre")
 
-# Criação de um DF exclusivo para o gráfico
-# Isso garante que as colunas Semestre e Trimestre existam sem depender da tabela agregada
-df_grafico = df.dropna(subset=['inicioData']).copy()
-df_grafico['Ano'] = df_grafico['inicioData'].dt.year
-df_grafico['Mes'] = df_grafico['inicioData'].dt.month
-df_grafico['Semestre'] = np.where(df_grafico['Mes'] <= 6, '1º Semestre', '2º Semestre')
-df_grafico['Trimestre'] = df_grafico['inicioData'].dt.quarter.astype(str) + 'º Trimestre'
+df_dados_completos = agregar_acordos_por_periodo(df)
 
-# Agrupa para contagem
-df_treemap = df_grafico.groupby(['Ano', 'Semestre', 'Trimestre']).size().reset_index(name='Qtd Acordos')
+if df_dados_completos is None or df_dados_completos.empty:
+    st.error("Não há dados suficientes para gerar a análise temporal.")
+    st.stop()
 
-# Criação do Nível Raiz (1º nível hierárquico)
-df_treemap['Total'] = 'Total Geral de Projetos'
+# Filtra apenas as linhas de nível 'Trimestre' para o gráfico
+df_treemap = df_dados_completos[df_dados_completos['Trimestre'].str.contains('Trimestre', na=False)].copy()
+
+# Filtramos zeros ANTES de qualquer coisa para evitar o erro de divisão
+# Se Qtd Acordos for 0, o peso é 0 e quebra o cálculo da cor no treemap.
+df_treemap = df_treemap[df_treemap['Qtd Acordos'] > 0]
 
 if not df_treemap.empty:
-    # Ano: True (Crescente - 2025, 2024...)
-    # Semestre: True (Crescente - 1º, 2º)
-    # Trimestre: True (Crescente - 1º, 2º, 3º...)
-    df_treemap = df_treemap.sort_values(
-        by=['Ano', 'Semestre', 'Trimestre'], 
-        ascending=[True, True, True]
-    )
+    # Preparação Hierárquica
+    df_treemap['Total'] = 'Total Geral de Projetos'
+    df_treemap['Ano'] = df_treemap['Ano'].astype(str)
+
+    # Ordenação (Ano Decrescente / Período Crescente)
+    df_treemap = df_treemap.sort_values(by=['Ano', 'Semestre', 'Trimestre'], ascending=[True, True, True])
+
     fig = px.treemap(
         df_treemap,
         path=['Total', 'Ano', 'Semestre', 'Trimestre'], # Hierarquia garantida
-        values='Qtd Acordos',
-        color='Qtd Acordos',
+        values='Qtd Acordos', 
+        color='Qtd Acordos', 
         color_continuous_scale='RdBu',
         title="Hierarquia de Acordos Firmados"
     )
     fig.update_traces(
         sort=False, # impede que o Plotly reordene os blocos do maior para o menor. Força a seguir a ordem cronológica do df.
         textinfo="label+value",
-        hovertemplate='<b>%{label}</b><br>Total de Acordos: %{value}<extra></extra>') # Mostra nome e valor
+        # Tooltip mostra o valor REAL (Qtd Acordos)
+        customdata=df_treemap['Qtd Acordos'],
+        hovertemplate='<b>%{label}</b><br>Total de Acordos: %{value}<extra></extra>'
+    )
     st.plotly_chart(fig, width='stretch')
 else:
     st.info("Dados insuficientes para o gráfico.")
@@ -98,22 +100,27 @@ df_tabela = agregar_acordos_por_periodo(df)
 
 if not df_tabela.empty:
     # Filtro Interativo
-    anos = sorted(df_tabela['Ano'].astype(int).unique().tolist(), reverse=True)
-    ano_filtro = st.selectbox("Filtrar Tabela por Ano:", ['Todos'] + anos)
+    anos = sorted(df_tabela['Ano'].unique().tolist(), reverse=True)
+    ano_sel = st.selectbox("Filtrar por Ano:", ['Todos'] + anos)
 
-    if ano_filtro != 'Todos':
-        df_tabela = df_tabela[df_tabela['Ano'] == ano_filtro]
+    if ano_sel != 'Todos':
+        df_tabela = df_tabela[df_tabela['Ano'] == ano_sel]
 
     # Exibição da Tabela
     st.dataframe(
         df_tabela,
         column_config={
-            "Ano": st.column_config.NumberColumn(format="%d"), # Remove vírgula de milhar do ano
+            "Ano": st.column_config.NumberColumn(format="%d"),
+            "Período": st.column_config.TextColumn("Período"),
+            "Qtd Acordos": st.column_config.NumberColumn("Qtd Acordos"),
             "Nomes dos Projetos": st.column_config.TextColumn(
                 "Projetos Firmados",
                 width="large",
-                help="Lista de projetos (separados por ponto e vírgula)"
-            )
+                help="Lista de projetos neste período"
+            ),
+            # retira as colunas de semestre e trimestre da tabela
+            "Semestre": None,
+            "Trimestre": None
         },
         width='stretch',
         hide_index=True
