@@ -186,10 +186,20 @@ def carregar_json_backup_mais_recente():
         print(f"Erro ao baixar backup mais recente: {e}")
         return pd.DataFrame()
 
+#######################################
+
+
+
+
+
+
+
+
+
 
 # Raiz do projeto (pasta onde está este arquivo)
 BASE_DIR = Path(__file__).resolve().parent
-INPUT_DIR = BASE_DIR / "input"
+#INPUT_DIR = BASE_DIR / "input"
 
 # Nome padrão do JSON (ajuste se necessário)
 DEFAULT_JSON_NAME = "Projetos de Desenvolvimento Tecnologico.json" # necessário apenas para os dados estáticos
@@ -243,6 +253,9 @@ def carregar_json_backup():
     except Exception as e:
         print(f"Erro ao obter o JSON: {e}")
         return pd.DataFrame() # <--- RETORNA DATAFRAME VAZIO EM CASO DE ERRO HTTP
+    
+    
+###############################################
 
 def _br_to_float(serie: pd.Series) -> pd.Series:
     """
