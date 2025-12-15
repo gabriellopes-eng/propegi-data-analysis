@@ -5,7 +5,6 @@ st.set_page_config(page_title="PROPEGI Financeiro", page_icon="../images/upeLogo
 
 # Título principal
 st.title("◈ PROPEGI Financeiro - Modelo")
-st.markdown("---")
 
 # Logo centralizado na barra lateral
 with st.sidebar:

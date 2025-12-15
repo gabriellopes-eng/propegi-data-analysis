@@ -10,7 +10,7 @@ from data_utils import carregar_dados, filtrar_por_ano
 PASTA_INPUT = Path(__file__).resolve().parents[1] / "input"
 
 st.set_page_config(page_title="Análise Mensal - Taxa/Plano", layout="wide")
-st.header("◈ Análise Mensal por Taxa e Plano de Trabalho")
+st.header("◈ Análise Mensal por Taxa e Plano de Trabalho",divider="blue")
 st.info("""
 **Storytelling:**
 Esta análise detalha a evolução mensal dos valores por tipo de taxa e plano de trabalho, permitindo identificar a contribuição de cada categoria ao longo do tempo e apoiar decisões de gestão financeira.

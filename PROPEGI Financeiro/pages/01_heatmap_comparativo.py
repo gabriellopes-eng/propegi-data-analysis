@@ -8,7 +8,7 @@ from data_utils import carregar_dados, filtrar_por_ano, filtrar_por_projeto
 PASTA_INPUT = Path(__file__).resolve().parents[1] / "input"
 
 st.set_page_config(page_title="Heatmap Comparativo", layout="wide")
-st.header("◈ Comparativo de Valores por Projeto e Mês")
+st.header("◈ Comparativo de Valores por Projeto e Mês", divider="blue")
 
 
 st.info("""
