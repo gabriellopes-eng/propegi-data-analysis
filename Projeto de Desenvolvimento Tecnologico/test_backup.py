@@ -87,10 +87,12 @@ if __name__ == "__main__":
         print(f"Tipo dos dados: {type(dados)}")
         print(f"Quantidade de registros: {len(dados)}")
         if len(dados) > 0:
+            print("")
             print("Primeiro registro do backup selecionado:")
-            print(dados[0])
+            print(df.iloc[0])
+            print("")
             print("Último registro do backup selecionado:")
-            print(dados[-1])
+            print(df.iloc[-1])
         else:
             print("Nenhum registro encontrado no JSON.")
     except Exception as e:
