@@ -3,6 +3,8 @@ import streamlit as st
 # Adiciona um título ao app principal
 st.set_page_config(page_title="Projeto de Desenvolvimento Tecnológico", page_icon="../images/upeLogo.png", layout="wide")
 
+st.title("◈ Projeto de Desenvolvimento Tecnológico")
+
 # Imagem centralizada na barra lateral
 import os
 with st.sidebar:

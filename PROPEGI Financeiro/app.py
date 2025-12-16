@@ -4,7 +4,7 @@ import os
 st.set_page_config(page_title="PROPEGI Financeiro", page_icon="../images/upeLogo.png", layout="wide")
 
 # Título principal
-st.title("◈ PROPEGI Financeiro - Modelo")
+st.title("◈ PROPEGI Financeiro")
 
 # Logo centralizado na barra lateral
 with st.sidebar:
