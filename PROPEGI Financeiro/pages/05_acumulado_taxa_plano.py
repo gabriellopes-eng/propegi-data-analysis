@@ -9,7 +9,7 @@ from data_utils import carregar_dados, filtrar_por_ano
 PASTA_INPUT = Path(__file__).resolve().parents[1] / "input"
 
 st.set_page_config(page_title="Acumulado - Taxa/Plano", layout="wide")
-st.header("◈ Análise do Período Completo por Taxa e Plano de Trabalho",divider="blue")
+st.header("◈ Análise do Período Completo por Taxa e Plano de Trabalho", divider="blue")
 st.info("""
 **Storytelling:**
 Esta análise apresenta o acumulado dos valores por tipo de taxa e plano de trabalho ao longo de todo o período, permitindo uma visão consolidada das principais fontes de receita e sua evolução.
