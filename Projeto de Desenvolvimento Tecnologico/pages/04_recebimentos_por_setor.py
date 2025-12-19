@@ -2,19 +2,32 @@ import streamlit as st
 import plotly.express as px
 import pandas as pd
 
-from data_utils import (          # <- import ABSOLUTO
-    carregar_json,
+from data_utils import (
+    carregar_ultimo_backup_json,  # dinâmico!
     normalizar_valores,
     preparar_datas,
-    input_path,                   # <- resolve caminho dentro de input/
-    DEFAULT_JSON_NAME,            # <- nome padrão do JSON
 )
 
 st.set_page_config(layout="wide")
-st.title("◈ Recebimentos por ano por Setor (Segmento)")
+st.header("◈ Recebimentos por ano por Setor (Segmento)", divider="blue")
+st.info("""
+**Storytelling:**
+Esta análise detalha os recebimentos por setor (segmento) ao longo dos anos, permitindo identificar quais setores são mais relevantes em termos de captação de recursos. Isso auxilia na definição de estratégias para fortalecer setores-chave e diversificar fontes de receita.
+""")
 
-# --- Carregamento e preparo ---
-df = carregar_json(input_path(DEFAULT_JSON_NAME))
+
+# --- Carregamento e preparo (dinâmico) ---
+import streamlit as st
+df = carregar_ultimo_backup_json()
+if df is None or (hasattr(df, 'empty') and df.empty):
+    st.error("Backup não pôde ser carregado ou está vazio.")
+    st.stop()
+if isinstance(df, list):
+    import pandas as pd
+    df = pd.DataFrame(df)
+if df.empty or 'dataPublicacao' not in df.columns:
+    st.error("Dados inválidos ou coluna 'dataPublicacao' ausente no backup.")
+    st.stop()
 df = normalizar_valores(df)
 df = preparar_datas(df)
 

@@ -1,35 +1,23 @@
-from __future__ import annotations
-from pathlib import Path
 import pandas as pd
+import numpy as np
+import itertools
+from requests_github import (
+    listar_backups_disponiveis,
+    carregar_backup_json,
+    carregar_todos_os_backups,
+    obter_metadata_ultimo_backup,
+    carregar_ultimo_backup_json,
+)
 
-# Raiz do projeto (pasta onde está este arquivo)
-BASE_DIR = Path(__file__).resolve().parent
-INPUT_DIR = BASE_DIR / "input"
 
-# Nome padrão do JSON (ajuste se necessário)
-DEFAULT_JSON_NAME = "Projetos de Desenvolvimento Tecnologico.json"
+# --- UTILITÁRIOS DE TRATAMENTO DE DADOS ---
+
 BRL_COLS = [
-    "valorPactuado",       # <--- NOVO: 19/11
+    "valorPactuado",
     "valorAgencia",
     "valorUnidade",
     "valorIAUPE",
 ]
-
-def input_path(name: str | Path = DEFAULT_JSON_NAME) -> Path:
-    """Retorna o caminho absoluto dentro de input/."""
-    p = INPUT_DIR / name
-    if not p.exists():
-        raise FileNotFoundError(f"Arquivo não encontrado em: {p}")
-    return p
-
-def carregar_json(path: str | Path | None = None) -> pd.DataFrame:
-    """
-    Lê o JSON (lista de objetos) e retorna um DataFrame.
-    Se path for None, usa input/DEFAULT_JSON_NAME.
-    """
-    if path is None:
-        path = input_path(DEFAULT_JSON_NAME)
-    return pd.read_json(path)
 
 def _br_to_float(serie: pd.Series) -> pd.Series:
     """
@@ -61,22 +49,18 @@ def preparar_datas(df: pd.DataFrame) -> pd.DataFrame:
     """Converte 'dataPublicacao' e cria colunas Ano/Mes/MesNome."""
     df = df.copy()
 
-    # -------------- MODIFICAÇAO 19/11 (INÍCIO) --------------
     # Colunas de data a serem convertidas
     date_cols = ["dataPublicacao", "inicioData", "terminoData"]
 
     for col in date_cols:
         if col in df.columns:
             df[col] = pd.to_datetime(df[col], errors="coerce")
-    # -------------- MODIFICAÇAO 19/11 (FIM) --------------
 
-    df["dataPublicacao"] = pd.to_datetime(df["dataPublicacao"], errors="coerce") # verificar se não é uma redundância
+    #df["dataPublicacao"] = pd.to_datetime(df["dataPublicacao"], errors="coerce") # verificar se não é uma redundância
     df["Ano"] = df["dataPublicacao"].dt.year
     df["Mes"] = df["dataPublicacao"].dt.month
     df["MesNome"] = df["dataPublicacao"].dt.strftime("%m/%b")
     return df
-
-# -------------- MODIFICAÇAO 26/11 (INÍCIO) --------------
 
 """Extrai o ano do formato 'XXX-AAAA'."""
 def _extrair_ano_do_acordo(serie_acordo: pd.Series) -> pd.Series:
@@ -107,8 +91,6 @@ def imputar_data_projeto(df: pd.DataFrame) -> pd.DataFrame:
     df['Ano'] = df['Ano'].fillna(9999).astype(int).astype(str).replace('9999', 'Não Definido')
     
     return df
-
-# -------------- MODIFICAÇAO 26/11 (FIM) --------------
 
 def agrupar_mensal(df: pd.DataFrame, ano: int) -> pd.DataFrame:
     """Soma por mês (1..12) os valores da agência, unidade e IA-UPE para o ano dado."""
@@ -145,7 +127,6 @@ def brl(v: float) -> str:
     s = f"{v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     return f"R$ {s}"
     
-# -------------- MODIFICAÇAO 19/11 (INÍCIO) --------------
 # Função para filtrar, ordenar e retornar os 5 projetos mais recentes
 def acordos_recentes(df: pd.DataFrame) -> pd.DataFrame:
     df_copy = df.copy()
@@ -155,4 +136,107 @@ def acordos_recentes(df: pd.DataFrame) -> pd.DataFrame:
     
     # Retorna os últimos 5
     return df_ordenado.head(5)
-# -------------- MODIFICAÇAO 19/11 (FIM) --------------
+
+# --------- UTILITÁRIOS PARA TRATAMENTO DE DADOS ----------
+
+# -------- ANALISE PARA TRIMESTRE E SEMESTRE (INÍCIO) ----------
+
+def agregar_acordos_por_periodo(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Gera um DataFrame consolidado para exibição em TABELA (Trimestre, Semestre e Ano).
+    """
+    df_temp = df.copy()
+
+    # Validação básica
+    if 'inicioData' not in df_temp.columns or not pd.api.types.is_datetime64_any_dtype(df_temp['inicioData']):
+        return pd.DataFrame() 
+    
+    # Remove nulos essenciais
+    df_temp = df_temp.dropna(subset=['inicioData', 'nomeProjeto']).copy()
+
+    if df_temp.empty:
+        return pd.DataFrame()
+    
+    # Criação de colunas temporais
+    df_temp['Ano'] = df_temp['inicioData'].dt.year.astype(int)
+    df_temp['Trimestre'] = df_temp['inicioData'].dt.quarter.astype(int).astype(str) + 'º Trimestre'
+    df_temp['Semestre'] = np.where(df_temp['inicioData'].dt.month <= 6, '1º Semestre', '2º Semestre')
+
+    anos = sorted(df_temp['Ano'].unique())
+    # Definimos aqui a ORDEM EXATA que queremos na tela
+    ordem_periodos = [
+        'Total Ano',
+        '1º Semestre',
+        '1º Trimestre (1º Semestre)',
+        '2º Trimestre (1º Semestre)',
+        '2º Semestre',
+        '3º Trimestre (2º Semestre)',
+        '4º Trimestre (2º Semestre)'
+    ]
+
+    # Função Agregadora
+    def listar_nomes(serie: pd.Series) -> str:
+        l = serie.sort_values().astype(str).tolist()
+        return '; '.join(l) if l else '-'
+
+    # Dicionário de Agregação
+    agg_dict = {'nomeProjeto': [('Qtd Acordos', 'count'), ('Nomes dos Projetos', listar_nomes)]}
+    resultados = []
+
+    # --- 1. NÍVEL TRIMESTRAL ---
+    trimestres = ['1º Trimestre', '2º Trimestre', '3º Trimestre', '4º Trimestre']
+    df_rascunho = pd.DataFrame(index=pd.MultiIndex.from_product([anos, trimestres], names=['Ano', 'Trimestre'])).reset_index()
+    
+    df_real = df_temp.groupby(['Ano', 'Trimestre']).agg(agg_dict).reset_index()
+    df_real.columns = ['Ano', 'Trimestre', 'Qtd Acordos', 'Nomes dos Projetos']
+    
+    df_final_trim = pd.merge(df_rascunho, df_real, on=['Ano', 'Trimestre'], how='left')
+
+    # Formata o nome
+    df_final_trim['Semestre'] = np.where(df_final_trim['Trimestre'].str.startswith(('1','2')), '1º Semestre', '2º Semestre')
+    df_final_trim['Período'] = df_final_trim['Trimestre'] + ' (' + df_final_trim['Semestre'] + ')'
+    resultados.append(df_final_trim)
+
+    # --- 2. NÍVEL SEMESTRAL ---
+    semestres = ['1º Semestre', '2º Semestre']
+    df_rascunho_sem = pd.DataFrame(index=pd.MultiIndex.from_product([anos, semestres], names=['Ano', 'Semestre'])).reset_index()
+    
+    df_real_sem = df_temp.groupby(['Ano', 'Semestre']).agg(agg_dict).reset_index()
+    df_real_sem.columns = ['Ano', 'Semestre', 'Qtd Acordos', 'Nomes dos Projetos']
+    
+    df_final_sem = pd.merge(df_rascunho_sem, df_real_sem, on=['Ano', 'Semestre'], how='left')
+
+    df_final_sem['Período'] = df_final_sem['Semestre']
+    df_final_sem['Trimestre'] = '-'
+    resultados.append(df_final_sem)
+
+    # --- 3. NÍVEL ANUAL ---
+    df_ano = df_temp.groupby(['Ano']).agg(agg_dict).reset_index()
+    df_ano.columns = ['Ano', 'Qtd Acordos', 'Nomes dos Projetos']
+    df_ano['Período'] = 'Total Ano'
+    df_ano['Semestre'] = '-'
+    df_ano['Trimestre'] = '-'
+    resultados.append(df_ano)
+
+    # Concatena e ordena
+    df_final = pd.concat(resultados, ignore_index=True)
+    
+    # Preenche vazios
+    df_final['Qtd Acordos'] = df_final['Qtd Acordos'].fillna(0).astype(int)
+    df_final['Nomes dos Projetos'] = df_final['Nomes dos Projetos'].fillna('-')
+
+    # Transforma 'Período' em uma Categoria com ordem definida
+    df_final['Período'] = pd.Categorical(
+        df_final['Período'], 
+        categories=ordem_periodos, 
+        ordered=True
+    )
+
+    # O Pandas ordena automaticamente baseado na lista 'ordem_periodos'
+    df_final = df_final.sort_values(by=['Ano', 'Período'], ascending=[False, True])
+
+    colunas_finais = ['Ano', 'Período', 'Semestre', 'Trimestre', 'Qtd Acordos', 'Nomes dos Projetos']
+    
+    return df_final[colunas_finais]
+
+# -------- TRIMESTRE E SEMESTRE (FIM) ----------

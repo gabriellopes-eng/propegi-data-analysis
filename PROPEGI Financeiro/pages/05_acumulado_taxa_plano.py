@@ -2,13 +2,18 @@ from pathlib import Path
 import streamlit as st
 import plotly.express as px
 
+
 # importar data_utils
 from data_utils import carregar_dados, filtrar_por_ano
 
 PASTA_INPUT = Path(__file__).resolve().parents[1] / "input"
 
 st.set_page_config(page_title="Acumulado - Taxa/Plano", layout="wide")
-st.header("📊 Análise do Período Completo por Taxa e Plano de Trabalho")
+st.header("◈ Análise do Período Completo por Taxa e Plano de Trabalho", divider="blue")
+st.info("""
+**Storytelling:**
+Esta análise apresenta o acumulado dos valores por tipo de taxa e plano de trabalho ao longo de todo o período, permitindo uma visão consolidada das principais fontes de receita e sua evolução.
+""")
 
 # carregar TODOS os JSONs da pasta input
 try:
@@ -67,7 +72,7 @@ fig.update_layout(
 st.plotly_chart(fig, width='stretch')
 
 # tabela
-st.subheader("📋 Tabela Detalhada - Valores Acumulados")
+st.subheader("◈ Tabela Detalhada - Valores Acumulados")
 tabela_pivot = acumulado_categoria.pivot_table(
     index="nomeProjeto",
     columns="categoriaDoRecurso",

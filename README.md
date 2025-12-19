@@ -1,3 +1,40 @@
+---
+
+## Como testar o carregamento de backups (test_backup.py)
+
+O projeto inclui um script de teste para validar o carregamento dos backups de dados diretamente do GitHub. Ele permite:
+- Verificar se o backup mais recente está acessível e válido
+- Listar todos os backups disponíveis
+- Selecionar e inspecionar qualquer backup manualmente
+
+### Como rodar o teste (Windows PowerShell ou terminal Unix)
+
+1. Ative o ambiente virtual (caso ainda não esteja ativado):
+
+  ```powershell
+  .\.venv\Scripts\Activate.ps1
+  ```
+  ou, no bash/zsh:
+  ```bash
+  source .venv/bin/activate
+  ```
+
+2. Execute o script de teste:
+
+  ```powershell
+  python Projeto de Desenvolvimento Tecnologico/test_backup.py
+  ```
+  ou, no bash/zsh:
+  ```bash
+  python 'Projeto de Desenvolvimento Tecnologico/test_backup.py'
+  ```
+
+O script irá:
+- Mostrar informações do backup mais recente
+- Listar todos os backups disponíveis
+- Permitir que você selecione um backup para inspecionar os dados
+
+Se houver algum erro de conexão ou leitura, o script exibirá mensagens detalhadas para facilitar o diagnóstico.
 # ◈ Data Analysis UPE
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
@@ -6,12 +43,15 @@
 
 <!-- teste -->
 
-Dashboards interativos em **Streamlit** que consomem arquivos **JSON** para dois domínios principais:
+
+Dashboards interativos em **Streamlit** para dois domínios principais, com dados carregados dinamicamente de backups hospedados no GitHub:
+
 
 - **PROPEGI Financeiro**
 - **Projeto de Desenvolvimento Tecnológico**
 
-Este README foi reescrito para mostrar, passo a passo, como preparar o ambiente e executar os dois apps localmente — com instruções para PowerShell (Windows), shells Unix (bash/zsh) e `fish`.
+
+Os apps não dependem mais de arquivos locais na pasta `input/` para análise: os dados são buscados automaticamente do backup mais recente disponível no repositório do GitHub, tornando o sistema robusto e sempre atualizado.
 
 ---
 
@@ -21,7 +61,8 @@ Este README foi reescrito para mostrar, passo a passo, como preparar o ambiente 
 - Git (opcional para clonar)
 - Dependências do projeto listadas em `requirements.txt`
 
-Observação: o projeto usa principalmente `streamlit`, `pandas`, `plotly` e `numpy`.
+
+Observação: o projeto usa principalmente `streamlit`, `pandas`, `plotly` e `numpy`. Todas as análises são dinâmicas e robustas, com storytelling e validações automáticas em cada página.
 
 ---
 
@@ -85,14 +126,14 @@ Se precisar de pacotes de desenvolvimento (formatadores, linter, testes), posso 
 
 - `Projeto de Desenvolvimento Tecnologico/`
 
+
   - `app.py` — app Streamlit principal deste domínio
   - `data_utils.py`, `pages/` — utilitários e páginas auxiliares
-  - `input/Projetos de Desenvolvimento Tecnologico.json` — exemplo/entrada de dados
 
 - `PROPEGI Financeiro/`
+
   - `app.py` — app Streamlit principal do domínio financeiro
   - `data_utils.py`, `pages/` — utilitários e páginas auxiliares
-  - `input/Financas.json` — arquivo de dados financeiros
 
 ---
 
@@ -142,19 +183,20 @@ Observação: os caminhos acima assumem que você está na máquina local onde o
 - Erro ao ativar `.venv` no PowerShell:
   - Execute `Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Confirm:$false` na sessão atual e tente ativar novamente.
 - Arquivo JSON não encontrado:
-  - Verifique que os arquivos JSON (`input/*.json`) estejam na pasta `input/` correspondente. As páginas usam `input_path()` e `DEFAULT_JSON_NAME` para localizar o arquivo.
+  - Os dados são carregados automaticamente do backup mais recente do GitHub. Não é necessário manter arquivos JSON locais na pasta `input/` para as análises funcionarem.
 - Selectbox com lista vazia (Streamlit):
-  - Se uma página usa `st.selectbox(..., index=0)` e não existem opções, Streamlit pode lançar erro. Caso veja esse erro, me peça que eu ajuste o código para checar lista vazia antes de criar o componente.
+  - Se uma página usa `st.selectbox(..., index=0)` e não existem opções, Streamlit pode lançar erro. Todas as páginas já possuem validação para evitar esse problema.
 
 ---
 
-## 7) Quero ajuda para (opções)
 
-- Gerar `requirements-dev.txt` com `black`, `flake8`, `pytest` e um `Makefile` simples.
-- Inserir testes básicos (`pytest`) para as funções de parsing/normalização.
-- Corrigir pequenos bugs de UX (ex.: `selectbox` quando não há anos disponíveis).
+## 7) Funcionalidades avançadas e testes
 
-Diga qual opção prefere que eu implemente primeiro e eu procedo com as mudanças.
+- Testes automatizados para validação e recuperação de backups dos dados estão disponíveis em scripts de teste.
+- Storytelling e validações automáticas de dados em todas as páginas dos dashboards.
+- Layout padronizado com navegação moderna e logo centralizado.
+
+Se quiser adicionar mais testes, ferramentas de desenvolvimento ou novas funcionalidades, abra uma issue ou entre em contato!
 
 ---
 

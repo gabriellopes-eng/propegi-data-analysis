@@ -2,26 +2,38 @@ import streamlit as st
 import plotly.express as px
 import pandas as pd
 
-from data_utils import (          # <- import ABSOLUTO
-    carregar_json,
-    preparar_datas,
-    imputar_data_projeto,         # <--- NOVO: 26/11
-    acordos_recentes,             # <--- NOVO: 19/11
-    brl,                          # <--- NOVO: 19/11
-    normalizar_valores,           # <--- NOVO: 19/11
-    input_path,                   # <- resolve caminho dentro de input/
-    DEFAULT_JSON_NAME,            # <- nome padrão do JSON
+from data_utils import (
+  carregar_ultimo_backup_json,  # dinâmico!
+  preparar_datas,
+  imputar_data_projeto,
+  acordos_recentes,
+  brl,
+  normalizar_valores,
 )
 
-st.title("◈ Projetos em desenvolvimento por segmento e ano")
+st.header("◈ Projetos em desenvolvimento por segmento e ano", divider="blue")
+st.info("""
+**Storytelling:**
+Esta análise mostra a quantidade de projetos em desenvolvimento por segmento e ano. O objetivo é evidenciar quais segmentos concentram mais projetos ao longo do tempo, permitindo identificar áreas estratégicas, tendências de crescimento e oportunidades de diversificação.
+""")
 st.caption("Visualização da quantidade de projetos por segmento em cada ano.")
 
-# Carregamento
-# Ordem: Carregar -> Normalizar Valores (limpar moedas) -> Preparar Datas (limpar datas)
-df = carregar_json(input_path(DEFAULT_JSON_NAME))
-df = normalizar_valores(df) # <--- NOVO: 19/11
+
+# Carregamento dinâmico
+import streamlit as st
+df = carregar_ultimo_backup_json()
+if df is None or (hasattr(df, 'empty') and df.empty):
+  st.error("Backup não pôde ser carregado ou está vazio.")
+  st.stop()
+if isinstance(df, list):
+  import pandas as pd
+  df = pd.DataFrame(df)
+if df.empty or 'dataPublicacao' not in df.columns:
+  st.error("Dados inválidos ou coluna 'dataPublicacao' ausente no backup.")
+  st.stop()
+df = normalizar_valores(df)
 df = preparar_datas(df)
-df = imputar_data_projeto(df) # <--- NOVO: 26/11
+df = imputar_data_projeto(df)
 
 
 # Verifica se a coluna "segmento" existe
@@ -29,15 +41,7 @@ if "segmento" not in df.columns:
     st.error("A coluna 'segmento' não foi encontrada no JSON.")
     st.stop()
 
-# -------------- MODIFICAÇAO 26/11 (INÍCIO) --------------
-
-# Tratamento da coluna 'segmento'
-if 'segmento' in df.columns:
-    df['segmento'] = df['segmento'].fillna('Não Definido') # Preenche valores nulos com uma categoria explícita
-
-# -------------- MODIFICAÇAO 26/11 (FIM) --------------
-
-# -------------- MODIFICAÇAO 19/11 (INÍCIO) --------------
+# -------------- ACORDOS RECENTES (INÍCIO) --------------
 
 # Função para injetar CSS customizado
 def _inject_css():
@@ -177,7 +181,7 @@ else:
 
 st.markdown("---")
 
-# -------------- MODIFICAÇAO 19/11 (FIM) --------------
+# -------------- ACORDOS RECENTES (FIM) --------------
 
 # Agrupamento: conta projetos por Ano e Segmento
 df_group = (
@@ -201,55 +205,3 @@ st.plotly_chart(fig, width='stretch')
 with st.expander("◆ Ver tabela agregada"):
     st.dataframe(df_group, width='stretch')
 
-
-# -------------- MODIFICAÇAO 26/11 (INÍCIO) --------------
-# --- VALIDAÇÃO DE CONTAGEM (ADICIONAR) ---
-
-# 1. Total de projetos no DataFrame original (DF Limpo)
-total_df_original = len(df) 
-
-# 2. Total de projetos no DataFrame Agregado (Soma da coluna QtdProjetos)
-total_df_agregado = df_group["QtdProjetos"].sum()
-
-# 3. Exibição do Teste de Sanidade
-st.subheader("Verificação de Integridade dos Dados")
-col_original, col_agregado, col_status = st.columns(3)
-
-col_original.metric(
-    "Total de Linhas (Original)", 
-    total_df_original
-)
-
-col_agregado.metric(
-    "Total Agregado (Soma do Gráfico)", 
-    total_df_agregado
-)
-
-# Verifica se os números batem e exibe o status
-if total_df_original == total_df_agregado:
-    col_status.success("✅ Contagem validada! O gráfico inclui 100% dos projetos.")
-else:
-    col_status.error(f"❌ Erro de Contagem: Diferença de {total_df_original - total_df_agregado} projetos. Verifique filtros ou colunas com valores nulos.")
-
-st.markdown("---")
-# ----------------------------------------------------------------
-# --- Verificação e Tratamento de Nulos ---
-
-# Quantidade de projetos ignorados por falta de Ano ou Segmento ou na categoria 'Não Definido'
-nulos_e_imputados_ano = (
-    df['Ano'].isna() | (df['Ano'] == 'Não Definido')
-).sum()
-
-nulos_e_imputados_segmento = (
-    df['segmento'].isna() | (df['segmento'] == 'Não Definido')
-).sum()
-
-# Exibição (Opcional, mas útil para debug)
-st.subheader("Relatório de Valores Nulos")
-st.markdown(f"- Projetos sem **Ano** de Publicação: **{nulos_e_imputados_ano}**")
-st.markdown(f"- Projetos sem **Segmento** definido: **{nulos_e_imputados_segmento}**")
-
-# A contagem real de projetos faltando é o número de linhas com NaN nessas colunas
-# que foram omitidas do df_group.
-
-# -------------- MODIFICAÇAO 26/11 (FIM) --------------

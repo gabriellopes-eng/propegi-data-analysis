@@ -8,7 +8,13 @@ from data_utils import carregar_dados, filtrar_por_ano, filtrar_por_projeto
 PASTA_INPUT = Path(__file__).resolve().parents[1] / "input"
 
 st.set_page_config(page_title="Heatmap Comparativo", layout="wide")
-st.header("📊 Comparativo de Valores por Projeto e Mês")
+st.header("◈ Comparativo de Valores por Projeto e Mês", divider="blue")
+
+
+st.info("""
+**Storytelling:**
+Esta análise apresenta um comparativo visual dos valores recebidos por projeto e por mês, facilitando a identificação de padrões, sazonalidades e projetos de maior relevância financeira ao longo do tempo.
+""")
 
 # carregar TODOS os JSONs da pasta input
 try:
@@ -62,5 +68,5 @@ fig.update_traces(hovertemplate="Projeto: %{y}<br>Mês: %{x}<br>Valor: R$ %{z:,.
 
 st.plotly_chart(fig, width='stretch')
 
-st.subheader("📋 Tabela Resumida")
+st.subheader("◈ Tabela Resumida")
 st.dataframe(tabela.style.format("R$ {:,.2f}"), width='stretch', height=400)

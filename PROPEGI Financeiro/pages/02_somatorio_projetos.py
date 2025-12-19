@@ -2,13 +2,19 @@ from pathlib import Path
 import streamlit as st
 import plotly.express as px
 
+
+
 # importar data_utils
 from data_utils import carregar_dados, filtrar_por_ano
 
 PASTA_INPUT = Path(__file__).resolve().parents[1] / "input"
 
 st.set_page_config(page_title="Somatório por Projeto", layout="wide")
-st.header("💰 Somatório dos Valores por Projeto")
+st.header("◈ Somatório dos Valores por Projeto",divider="blue")
+st.info("""
+**Storytelling:**
+Esta análise mostra o somatório dos valores recebidos por cada projeto, permitindo identificar quais projetos são mais expressivos em termos de captação de recursos e auxiliando na priorização de esforços e investimentos.
+""")
 
 # carregar TODOS os JSONs da pasta input
 try:
@@ -60,7 +66,7 @@ fig.update_layout(xaxis_tickformat=",.2f", height=600)
 
 st.plotly_chart(fig, width='stretch')
 
-st.subheader("📋 Tabela - Somatório por Projeto")
+st.subheader("◈ Tabela - Somatório por Projeto")
 st.dataframe(
     soma_projeto[["nomeProjeto", "Total"]].style.format({"Total": "R$ {:,.2f}"}),
     width='stretch',

@@ -2,13 +2,19 @@ from pathlib import Path
 import streamlit as st
 import plotly.express as px
 
+
+
 # importar data_utils
 from data_utils import carregar_dados, filtrar_por_ano
 
 PASTA_INPUT = Path(__file__).resolve().parents[1] / "input"
 
 st.set_page_config(page_title="Evolução Mensal", layout="wide")
-st.header("📈 Evolução Mensal do Valor Total")
+st.header("◈ Evolução Mensal do Valor Total", divider="blue")
+st.info("""
+**Storytelling:**
+Esta análise apresenta a evolução mensal do valor total recebido, permitindo identificar tendências, sazonalidades e períodos de maior ou menor captação ao longo do tempo.
+""")
 
 # carregar TODOS os JSONs da pasta input
 try:
@@ -61,7 +67,7 @@ fig.update_layout(
 
 st.plotly_chart(fig, width='stretch')
 
-st.subheader("📋 Tabela - Total Mensal (Todos os projetos)")
+st.subheader("◈ Tabela - Total Mensal (Todos os projetos)")
 st.dataframe(
     total_mensal[["AnoMes", "Total"]].style.format({"Total": "R$ {:,.2f}"}),
     width='stretch',
