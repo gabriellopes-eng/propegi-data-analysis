@@ -11,7 +11,7 @@ from data_utils import (
   normalizar_valores,
 )
 
-st.header("◈ Projetos em desenvolvimento por segmento e ano", divider="blue")
+st.header("Projetos em desenvolvimento por segmento e ano", divider="blue")
 st.info("""
 **Storytelling:**
 Esta análise mostra a quantidade de projetos em desenvolvimento por segmento e ano. O objetivo é evidenciar quais segmentos concentram mais projetos ao longo do tempo, permitindo identificar áreas estratégicas, tendências de crescimento e oportunidades de diversificação.

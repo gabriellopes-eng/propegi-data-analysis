@@ -46,7 +46,7 @@ def kpi_card(title: str, big_value: str, small_label: str, small_value: str):
     )
 
 # -------- Página principal --------
-st.header("◈ Recebimentos mensais por órgão (Agência, Unidade, IA-UPE)", divider="blue")
+st.header("Recebimentos mensais por órgão (Agência, Unidade, IA-UPE)", divider="blue")
 st.info("""
 **Storytelling:**
 Esta análise apresenta a evolução dos recebimentos mensais dos projetos de desenvolvimento tecnológico. O objetivo é identificar padrões sazonais, tendências de crescimento ou queda ao longo do tempo, e fornecer subsídios para o planejamento financeiro e estratégico dos projetos.

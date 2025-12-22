@@ -13,7 +13,7 @@ from data_utils import (
 
 
 st.set_page_config(layout="wide")
-st.header("◈ Análise Temporal de Acordos", divider="blue")
+st.header("Análise Temporal de Acordos", divider="blue")
 st.info("""
 **Storytelling:**
 Esta análise temporal permite visualizar a distribuição dos acordos ao longo do tempo, identificando períodos de maior ou menor atividade. Com isso, é possível compreender ciclos, sazonalidades e impactos de eventos externos na dinâmica dos projetos.
