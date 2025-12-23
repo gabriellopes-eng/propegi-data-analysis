@@ -83,7 +83,7 @@ fig.update_layout(
 st.plotly_chart(fig, width='stretch')
 
 # tabela
-st.subheader("◈ Tabela Detalhada")
+st.subheader("Tabela Detalhada")
 tabela_pivot = mensal_categoria.pivot_table(
     index="mes",
     columns="categoriaDoRecurso",

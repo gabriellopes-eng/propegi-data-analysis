@@ -118,7 +118,7 @@ with c4:
 
 # Tabela 
 st.markdown("---")
-with st.expander("◆ Ver tabela mensal detalhada"):
+with st.expander("Ver tabela mensal detalhada"):
     st.dataframe(
         df_mes[["Mes", "MesNome", "valorAgencia", "valorUnidade", "valorIAUPE", "TotalMes"]]
         .rename(columns={"MesNome": "Mês"}),

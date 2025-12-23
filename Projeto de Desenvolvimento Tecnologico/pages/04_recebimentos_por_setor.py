@@ -83,7 +83,7 @@ with col_side:
     st.plotly_chart(fig_pie, width='stretch')
 
 # --- Tabela ---
-with st.expander("◆ Ver tabela por ano e setor"):
+with st.expander("Ver tabela por ano e setor"):
     tabela = (
         df_group.pivot(index="Ano", columns="segmento", values="ValorTotal")
                .fillna(0.0)

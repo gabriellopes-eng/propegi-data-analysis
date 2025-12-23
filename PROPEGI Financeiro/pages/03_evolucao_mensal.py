@@ -67,7 +67,7 @@ fig.update_layout(
 
 st.plotly_chart(fig, width='stretch')
 
-st.subheader("◈ Tabela - Total Mensal (Todos os projetos)")
+st.subheader("Tabela - Total Mensal (Todos os projetos)")
 st.dataframe(
     total_mensal[["AnoMes", "Total"]].style.format({"Total": "R$ {:,.2f}"}),
     width='stretch',

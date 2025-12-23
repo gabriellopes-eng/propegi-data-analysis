@@ -202,6 +202,6 @@ fig.update_layout(barmode="stack", xaxis=dict(type="category"))
 st.plotly_chart(fig, width='stretch')
 
 # Tabela
-with st.expander("◆ Ver tabela agregada"):
+with st.expander("Ver tabela agregada"):
     st.dataframe(df_group, width='stretch')
 

@@ -72,7 +72,7 @@ fig.update_layout(
 st.plotly_chart(fig, width='stretch')
 
 # tabela
-st.subheader("◈ Tabela Detalhada - Valores Acumulados")
+st.subheader("Tabela Detalhada - Valores Acumulados")
 tabela_pivot = acumulado_categoria.pivot_table(
     index="nomeProjeto",
     columns="categoriaDoRecurso",

@@ -44,8 +44,8 @@ if df.empty or 'inicioData' not in df.columns:
 # -------------------------------------------------------------
 # VISUALIZAÇÃO DO TREEMAP
 # -------------------------------------------------------------
-st.subheader("◈ Mapa de Árvore (Treemap)")
-st.caption("◈ Distribuição hierárquica: Ano > Semestre > Trimestre")
+st.subheader("Mapa de Árvore (Treemap)")
+st.caption("Distribuição hierárquica: Ano > Semestre > Trimestre")
 
 df_dados_completos = agregar_acordos_por_periodo(df)
 
@@ -92,7 +92,7 @@ st.markdown("---")
 # -------------------------------------------------------------
 # TABELA DE DETALHAMENTO (Usando a função do data_utils)
 # -------------------------------------------------------------
-st.subheader("◈ Tabela Detalhada por Período")
+st.subheader("Tabela Detalhada por Período")
 
 # Criação da tabela
 df_tabela = agregar_acordos_por_periodo(df)

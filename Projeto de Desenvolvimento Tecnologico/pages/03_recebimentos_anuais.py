@@ -117,5 +117,5 @@ with c4:
 
 # Tabela
 st.markdown("---")
-with st.expander("◆ Ver tabela agregada"):
+with st.expander("Ver tabela agregada"):
     st.dataframe(df_group, width='stretch')

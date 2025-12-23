@@ -66,7 +66,7 @@ fig.update_layout(xaxis_tickformat=",.2f", height=600)
 
 st.plotly_chart(fig, width='stretch')
 
-st.subheader("◈ Tabela - Somatório por Projeto")
+st.subheader("Tabela - Somatório por Projeto")
 st.dataframe(
     soma_projeto[["nomeProjeto", "Total"]].style.format({"Total": "R$ {:,.2f}"}),
     width='stretch',

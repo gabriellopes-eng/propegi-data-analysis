@@ -68,5 +68,5 @@ fig.update_traces(hovertemplate="Projeto: %{y}<br>Mês: %{x}<br>Valor: R$ %{z:,.
 
 st.plotly_chart(fig, width='stretch')
 
-st.subheader("◈ Tabela Resumida")
+st.subheader("Tabela Resumida")
 st.dataframe(tabela.style.format("R$ {:,.2f}"), width='stretch', height=400)
