@@ -7,7 +7,7 @@ from data_utils import (
   preparar_datas,
   imputar_data_projeto,
   acordos_recentes,
-  brl,
+  to_brl,
   normalizar_valores,
 )
 
@@ -108,7 +108,7 @@ def agreement_card(projeto, segmento, pactuado, inicio, termino, coordenador):
             Término: <span style="font-weight: 600;">{termino_str}</span>
           </div>
           <div class="project-value" style="margin-top: 10px;">
-            Valor Pactuado: {brl(pactuado)}
+            Valor Pactuado: {to_brl(pactuado)}
           </div>
         </div>
         """,

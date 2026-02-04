@@ -7,7 +7,7 @@ from data_utils import (
     normalizar_valores,
     preparar_datas,
     agrupar_mensal,
-    kpis_anuais,
+    calculate_annual_kpis,
 )
 
 def _brl(v: float) -> str:
@@ -71,11 +71,11 @@ anos_disponiveis = sorted([int(a) for a in df["Ano"].dropna().unique()])
 ano_sel = st.selectbox("Selecione o ano", anos_disponiveis, index=0)
 
 # Agregação mensal (12 meses garantidos)
-df_mes = agrupar_mensal(df, ano_sel)
+df_monthly = agrupar_mensal(df, ano_sel)
 
 # Gráfico de linhas (3 séries)
 fig = px.line(
-    df_mes,
+    df_monthly,
     x="MesNome",
     y=["valorAgencia", "valorUnidade", "valorIAUPE"],
     markers=True,
@@ -90,21 +90,21 @@ _inject_css()
 st.subheader("❖ Resumo do Ano")
 
 # Totais anuais 
-totais = kpis_anuais(df_mes)
+totais = calculate_annual_kpis(df_monthly)
 tot_agencia = totais["agencia"]
 tot_unidade = totais["unidade"]
 tot_iaupe   = totais["ia_upe"]
 
 # Médias mensais
-media_agencia = float(np.mean(df_mes["valorAgencia"]))
-media_unidade = float(np.mean(df_mes["valorUnidade"]))
-media_iaupe   = float(np.mean(df_mes["valorIAUPE"]))
+media_agencia = float(np.mean(df_monthly["valorAgencia"]))
+media_unidade = float(np.mean(df_monthly["valorUnidade"]))
+media_iaupe   = float(np.mean(df_monthly["valorIAUPE"]))
 
 # Pico do ano
-df_mes["TotalMes"] = df_mes["valorAgencia"] + df_mes["valorUnidade"] + df_mes["valorIAUPE"]
-idx_pico   = df_mes["TotalMes"].idxmax()
-mes_pico   = df_mes.loc[idx_pico, "MesNome"]
-valor_pico = float(df_mes.loc[idx_pico, "TotalMes"])
+df_monthly["TotalMes"] = df_monthly["valorAgencia"] + df_monthly["valorUnidade"] + df_monthly["valorIAUPE"]
+idx_pico   = df_monthly["TotalMes"].idxmax()
+mes_pico   = df_monthly.loc[idx_pico, "MesNome"]
+valor_pico = float(df_monthly.loc[idx_pico, "TotalMes"])
 
 c1, c2, c3, c4 = st.columns(4)
 with c1:
@@ -120,7 +120,7 @@ with c4:
 st.markdown("---")
 with st.expander("Ver tabela mensal detalhada"):
     st.dataframe(
-        df_mes[["Mes", "MesNome", "valorAgencia", "valorUnidade", "valorIAUPE", "TotalMes"]]
+        df_monthly[["Mes", "MesNome", "valorAgencia", "valorUnidade", "valorIAUPE", "TotalMes"]]
         .rename(columns={"MesNome": "Mês"}),
         width='stretch',
     )
