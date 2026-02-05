@@ -27,13 +27,12 @@ def _br_to_float(serie: pd.Series) -> pd.Series:
         return serie.astype(float)
     
     serie = serie.fillna("0").astype(str)
-    serie = serie.str.strip() # remove espaços e caracteres invisíveis do início ao fim
-    serie = serie.str.replace(r'[^\d\.\,]', '', regex=True) # Remove qualquer coisa que não seja dígito, ponto ou vírgula
+    serie = serie.str.strip()  # Remove espaços e caracteres invisíveis do início ao fim
+    serie = serie.str.replace(r'[^\d\.\,]', '', regex=True)  # Remove qualquer coisa que não seja dígito, ponto ou vírgula
 
-    # Cconversão BR -> Float
-        serie.str.replace(".", "", regex=False)  # Remove separador de milhar (ponto)
-             .str.replace(",", ".", regex=False) # Substitui vírgula por ponto decimal
-    )
+    # Conversão BR -> Float
+    serie = serie.str.replace(".", "", regex=False)  # Remove separador de milhar (ponto)
+    serie = serie.str.replace(",", ".", regex=False)  # Substitui vírgula por ponto decimal
     
     return pd.to_numeric(serie, errors="coerce").fillna(0.0)
 
