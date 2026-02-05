@@ -3,9 +3,9 @@ import plotly.express as px
 import pandas as pd
 
 from data_utils import (
-    carregar_ultimo_backup_json,  # dinâmico!
-    normalizar_valores,
-    preparar_datas,
+    carregar_ultimo_backup_json,
+    normalize_values,
+    prepare_dates,
 )
 
 st.set_page_config(layout="wide")
@@ -17,7 +17,6 @@ Esta análise detalha os recebimentos por setor (segmento) ao longo dos anos, pe
 
 
 # --- Carregamento e preparo (dinâmico) ---
-import streamlit as st
 df = carregar_ultimo_backup_json()
 if df is None or (hasattr(df, 'empty') and df.empty):
     st.error("Backup não pôde ser carregado ou está vazio.")
@@ -28,16 +27,16 @@ if isinstance(df, list):
 if df.empty or 'dataPublicacao' not in df.columns:
     st.error("Dados inválidos ou coluna 'dataPublicacao' ausente no backup.")
     st.stop()
-df = normalizar_valores(df)
-df = preparar_datas(df)
+df = normalize_values(df)
+df = prepare_dates(df)
 
 if "segmento" not in df.columns:
     st.error("❌ A coluna 'Segmento' não foi encontrada no JSON.")
     st.stop()
 
 # Total por registro (Agência + Unidade + IA-UPE)
-cols_valor = ["valorAgencia", "valorUnidade", "valorIAUPE"]
-df["ValorTotal"] = df[cols_valor].sum(axis=1)
+value_cols = ["valorAgencia", "valorUnidade", "valorIAUPE"]
+df["ValorTotal"] = df[value_cols].sum(axis=1)
 
 # Agrupamento Ano × Segmento (soma valores)
 df_group = (
@@ -50,7 +49,7 @@ df_group = (
 col_chart, col_side = st.columns([7, 5], gap="large")
 
 with col_chart:
-    st.subheader("❖ Recebimentos anuais por Setor (Segmento)")
+    st.subheader("Recebimentos anuais por Setor (Segmento)")
     fig_bar = px.bar(
         df_group,
         x="Ano",
@@ -65,28 +64,28 @@ with col_chart:
     st.plotly_chart(fig_bar, width='stretch')
 
 with col_side:
-    st.subheader("❖ Distribuição por setor")
-    anos = sorted(df_group["Ano"].unique().tolist())
-    ano_sel = st.selectbox("Período", anos, index=len(anos) - 1)
+    st.subheader("Distribuição por setor")
+    available_years = sorted(df_group["Ano"].unique().astype(int).tolist(), reverse=True)
+    selected_year = st.selectbox("Período", available_years, index=0)
 
-    df_ano = df_group[df_group["Ano"] == ano_sel].copy()
-    if df_ano.empty:
+    df_year = df_group[df_group["Ano"] == selected_year].copy()
+    if df_year.empty:
         st.info("Sem dados para o ano selecionado.")
     else:
         fig_pie = px.pie(
-            df_ano,
+            df_year,
             names="segmento",
             values="ValorTotal",
             hole=0.50,
-            title=f"Distribuição por setor — {ano_sel}",
+            title=f"Distribuição por setor — {selected_year}",
         )
     st.plotly_chart(fig_pie, width='stretch')
 
 # --- Tabela ---
 with st.expander("Ver tabela por ano e setor"):
-    tabela = (
+    pivot_table = (
         df_group.pivot(index="Ano", columns="segmento", values="ValorTotal")
                .fillna(0.0)
                .sort_index(axis=1)  # ordena colunas alfabeticamente
     )
-    st.dataframe(tabela, width='stretch')
+    st.dataframe(pivot_table, width='stretch')

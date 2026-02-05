@@ -1,16 +1,12 @@
 import streamlit as st
 import plotly.express as px
-import numpy as np  # (não é usado aqui, mas pode ficar se for usar depois)
 
 from data_utils import (
-    carregar_ultimo_backup_json,  # dinâmico!
-    normalizar_valores,
-    preparar_datas,
+    carregar_ultimo_backup_json,
+    normalize_values,
+    prepare_dates,
+    to_brl,
 )
-
-# ---------- Utils de exibição ----------
-def _brl(v: float) -> str:
-    return f"R$ {v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 def _inject_css():
     st.markdown(
@@ -64,8 +60,8 @@ if isinstance(df, list):
 if df.empty or 'dataPublicacao' not in df.columns:
     st.error("Dados inválidos ou coluna 'dataPublicacao' ausente no backup.")
     st.stop()
-df = normalizar_valores(df)
-df = preparar_datas(df)
+df = normalize_values(df)
+df = prepare_dates(df)
 
 # Agrupamento por Ano
 df_group = (
@@ -92,28 +88,28 @@ st.plotly_chart(fig, width='stretch')
 _inject_css()
 st.subheader("❖ Resumo dos anos")
 
-tot_agencia = float(df_group["valorAgencia"].sum())
-tot_unidade = float(df_group["valorUnidade"].sum())
-tot_iaupe   = float(df_group["valorIAUPE"].sum())
+agencia_totals = float(df_group["valorAgencia"].sum())
+unidade_totals = float(df_group["valorUnidade"].sum())
+iaupe_totals   = float(df_group["valorIAUPE"].sum())
 
 df_group["TotalAno"] = (
     df_group["valorAgencia"] + df_group["valorUnidade"] + df_group["valorIAUPE"]
 )
-idx_pico   = df_group["TotalAno"].idxmax()
-ano_pico   = int(df_group.loc[idx_pico, "Ano"])
-valor_pico = float(df_group.loc[idx_pico, "TotalAno"])
+peak_idx = df_group["TotalAno"].idxmax()
+peak_year = int(df_group.loc[peak_idx, "Ano"])
+peak_value = float(df_group.loc[peak_idx, "TotalAno"])
 
-periodo_txt = f"{int(df_group['Ano'].min())}–{int(df_group['Ano'].max())}"
+period_str = f"{int(df_group['Ano'].min())}–{int(df_group['Ano'].max())}"
 
 c1, c2, c3, c4 = st.columns(4)
 with c1:
-    kpi_card("Total acumulado — Agência", _brl(tot_agencia), "Período completo:", periodo_txt)
+    kpi_card("Total acumulado — Agência", to_brl(agencia_totals), "Período completo:", period_str)
 with c2:
-    kpi_card("Total acumulado — Unidade", _brl(tot_unidade), "Período completo:", periodo_txt)
+    kpi_card("Total acumulado — Unidade", to_brl(unidade_totals), "Período completo:", period_str)
 with c3:
-    kpi_card("Total acumulado — IA-UPE", _brl(tot_iaupe), "Período completo:", periodo_txt)
+    kpi_card("Total acumulado — IA-UPE", to_brl(iaupe_totals), "Período completo:", period_str)
 with c4:
-    kpi_card(f"Ano pico — {ano_pico}", _brl(valor_pico), "Maior soma entre órgãos:", "Soma dos 3 valores")
+    kpi_card(f"Ano pico — {peak_year}", to_brl(peak_value), "Maior soma entre órgãos:", "Soma dos 3 valores")
 
 # Tabela
 st.markdown("---")

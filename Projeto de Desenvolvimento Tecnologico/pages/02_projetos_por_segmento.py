@@ -3,12 +3,12 @@ import plotly.express as px
 import pandas as pd
 
 from data_utils import (
-  carregar_ultimo_backup_json,  # dinâmico!
-  preparar_datas,
-  imputar_data_projeto,
-  acordos_recentes,
+  carregar_ultimo_backup_json,
+  prepare_dates,
+  impute_project_date,
+  get_recent_agreements,
   to_brl,
-  normalizar_valores,
+  normalize_values,
 )
 
 st.header("Projetos em desenvolvimento por segmento e ano", divider="blue")
@@ -31,9 +31,9 @@ if isinstance(df, list):
 if df.empty or 'dataPublicacao' not in df.columns:
   st.error("Dados inválidos ou coluna 'dataPublicacao' ausente no backup.")
   st.stop()
-df = normalizar_valores(df)
-df = preparar_datas(df)
-df = imputar_data_projeto(df)
+df = normalize_values(df)
+df = prepare_dates(df)
+df = impute_project_date(df)
 
 
 # Verifica se a coluna "segmento" existe
@@ -43,7 +43,6 @@ if "segmento" not in df.columns:
 
 # -------------- ACORDOS RECENTES (INÍCIO) --------------
 
-# Função para injetar CSS customizado
 def _inject_css():
     st.markdown(
         """
@@ -87,28 +86,28 @@ def _inject_css():
     )
 
 # Função de Card Customizada para Acordos
-def agreement_card(projeto, segmento, pactuado, inicio, termino, coordenador):
+def agreement_card(project_name, segment, agreed_value, start_date, end_date, coordinator):
     
     # Formata datas para DD/MM/AAAA (necessário pois o row[data] é um objeto datetime)
-    inicio_str = inicio.strftime('%d/%m/%Y') if pd.notna(inicio) else "N/D"
-    termino_str = termino.strftime('%d/%m/%Y') if pd.notna(termino) else "N/D"
+    start_date_str = start_date.strftime('%d/%m/%Y') if pd.notna(start_date) else "N/D"
+    end_date_str = end_date.strftime('%d/%m/%Y') if pd.notna(end_date) else "N/D"
 
     st.markdown(
         f"""
         <div class="project-card">
-          <div class="project-title">{projeto}</div>
+          <div class="project-title">{project_name}</div>
           <div class="project-detail">
-            Segmento: <strong>{segmento}</strong>
+            Segmento: <strong>{segment}</strong>
           </div>
           <div class="project-detail">
-            Coordenador: <strong>{coordenador}</strong>
+            Coordenador: <strong>{coordinator}</strong>
           </div>
           <div style="margin-top: 10px;">
-            Início: <span style="font-weight: 600;">{inicio_str}</span> | 
-            Término: <span style="font-weight: 600;">{termino_str}</span>
+            Início: <span style="font-weight: 600;">{start_date_str}</span> | 
+            Término: <span style="font-weight: 600;">{end_date_str}</span>
           </div>
           <div class="project-value" style="margin-top: 10px;">
-            Valor Pactuado: {to_brl(pactuado)}
+            Valor Pactuado: {to_brl(agreed_value)}
           </div>
         </div>
         """,
@@ -121,8 +120,8 @@ _inject_css()
 
 st.subheader("Acordos Firmados Recentemente")
 
-df_recentes = acordos_recentes(df)
-num_cards = len(df_recentes)
+df_recent = get_recent_agreements(df)
+num_cards = len(df_recent)
 
 if num_cards == 0:
     st.info("Nenhum acordo recente encontrado ou dados insuficientes.")
@@ -137,13 +136,13 @@ else:
             
             # Card 1 (Índice 0)
             with col1:
-                row0 = df_recentes.iloc[0]
-                agreement_card(projeto=row0.get("nomeProjeto", "N/A"), segmento=row0.get("segmento", "N/A"), pactuado=row0.get("valorPactuado", 0.0), inicio=row0.get("inicioData"), termino=row0.get("terminoData"), coordenador=row0.get("coordenador", "N/A"))
+                row0 = df_recent.iloc[0]
+                agreement_card(project_name=row0.get("nomeProjeto", "N/A"), segment=row0.get("segmento", "N/A"), agreed_value=row0.get("valorPactuado", 0.0), start_date=row0.get("inicioData"), end_date=row0.get("terminoData"), coordinator=row0.get("coordenador", "N/A"))
             
             # Card 2 (Índice 1)
             with col2:
-                row1 = df_recentes.iloc[1]
-                agreement_card(projeto=row1.get("nomeProjeto", "N/A"), segmento=row1.get("segmento", "N/A"), pactuado=row1.get("valorPactuado", 0.0), inicio=row1.get("inicioData"), termino=row1.get("terminoData"), coordenador=row1.get("coordenador", "N/A"))
+                row1 = df_recent.iloc[1]
+                agreement_card(project_name=row1.get("nomeProjeto", "N/A"), segment=row1.get("segmento", "N/A"), agreed_value=row1.get("valorPactuado", 0.0), start_date=row1.get("inicioData"), end_date=row1.get("terminoData"), coordinator=row1.get("coordenador", "N/A"))
         else:
             st.info(f"Apenas {num_cards} acordos disponíveis. Conteúdo da Pag 1 incompleto.")
 
@@ -154,13 +153,13 @@ else:
 
             # Card 3 (Índice 2)
             with col3:
-                row2 = df_recentes.iloc[2]
-                agreement_card(projeto=row2.get("nomeProjeto", "N/A"), segmento=row2.get("Segmento", "N/A"), pactuado=row2.get("valorPactuado", 0.0), inicio=row2.get("inicioData"), termino=row2.get("terminoData"), coordenador=row2.get("coordenador", "N/A"))
+                row2 = df_recent.iloc[2]
+                agreement_card(project_name=row2.get("nomeProjeto", "N/A"), segment=row2.get("Segmento", "N/A"), agreed_value=row2.get("valorPactuado", 0.0), start_date=row2.get("inicioData"), end_date=row2.get("terminoData"), coordinator=row2.get("coordenador", "N/A"))
             
             # Card 4 (Índice 3)
             with col4:
-                row3 = df_recentes.iloc[3]
-                agreement_card(projeto=row3.get("nomeProjeto", "N/A"), segmento=row3.get("Segmento", "N/A"), pactuado=row3.get("valorPactuado", 0.0), inicio=row3.get("inicioData"), termino=row3.get("terminoData"), coordenador=row3.get("coordenador", "N/A"))
+                row3 = df_recent.iloc[3]
+                agreement_card(project_name=row3.get("nomeProjeto", "N/A"), segment=row3.get("Segmento", "N/A"), agreed_value=row3.get("valorPactuado", 0.0), start_date=row3.get("inicioData"), end_date=row3.get("terminoData"), coordinator=row3.get("coordenador", "N/A"))
         elif num_cards > 2:
              st.info(f"Apenas {num_cards} acordos disponíveis. Conteúdo da Pag 2 incompleto.")
         else:
@@ -174,8 +173,8 @@ else:
             col_side1, col_center, col_side2 = st.columns([1, 1.5, 1]) 
             
             with col_center:
-                row4 = df_recentes.iloc[4]
-                agreement_card(projeto=row4.get("nomeProjeto", "N/A"), segmento=row4.get("segmento", "N/A"), pactuado=row4.get("valorPactuado", 0.0), inicio=row4.get("inicioData"), termino=row4.get("terminoData"), coordenador=row4.get("coordenador", "N/A"))
+                row4 = df_recent.iloc[4]
+                agreement_card(project_name=row4.get("nomeProjeto", "N/A"), segment=row4.get("segmento", "N/A"), agreed_value=row4.get("valorPactuado", 0.0), start_date=row4.get("inicioData"), end_date=row4.get("terminoData"), coordinator=row4.get("coordenador", "N/A"))
         else:
             st.info("Página 3 vazia. Mínimo de 5 acordos necessários.")
 
@@ -195,7 +194,7 @@ fig = px.bar(
     y="QtdProjetos",
     color="segmento",
     text="QtdProjetos",
-    title="❖ Projetos em desenvolvimento por segmento/ano",
+    title="Projetos em desenvolvimento por segmento/ano",
     labels={"QtdProjetos": "Quantidade de Projetos"},
 )
 fig.update_layout(barmode="stack", xaxis=dict(type="category"))

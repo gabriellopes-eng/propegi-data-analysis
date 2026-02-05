@@ -36,14 +36,14 @@ def _br_to_float(serie: pd.Series) -> pd.Series:
     
     return pd.to_numeric(serie, errors="coerce").fillna(0.0)
 
-def normalizar_valores(df: pd.DataFrame) -> pd.DataFrame:
+def normalize_values(df: pd.DataFrame) -> pd.DataFrame:
     """Garante que colunas monetárias estejam em float."""
     for c in BRL_COLS:
         if c in df.columns:
             df[c] = _br_to_float(df[c])
     return df
 
-def preparar_datas(df: pd.DataFrame) -> pd.DataFrame:
+def prepare_dates(df: pd.DataFrame) -> pd.DataFrame:
     """Converte 'dataPublicacao' e cria colunas Ano/Mes/MesNome."""
     df = df.copy()
 
@@ -54,25 +54,24 @@ def preparar_datas(df: pd.DataFrame) -> pd.DataFrame:
         if col in df.columns:
             df[col] = pd.to_datetime(df[col], errors="coerce")
 
-    #df["dataPublicacao"] = pd.to_datetime(df["dataPublicacao"], errors="coerce") # verificar se não é uma redundância
     df["Ano"] = df["dataPublicacao"].dt.year
     df["Mes"] = df["dataPublicacao"].dt.month
     df["MesNome"] = df["dataPublicacao"].dt.strftime("%m/%b")
     return df
 
 """Extrai o ano do formato 'XXX-AAAA'."""
-def _extrair_ano_do_acordo(serie_acordo: pd.Series) -> pd.Series:
-    serie = serie_acordo.astype(str).str.split('-').str[-1]
+def _extract_agreement_year(agreement_series: pd.Series) -> pd.Series:
+    serie = agreement_series.astype(str).str.split('-').str[-1]
     # Converte para numérico e coerce erros (onde a string não é um ano)
     return pd.to_numeric(serie, errors='coerce')
 
 # Cria uma coluna 'AnoProjeto' usando lógica sequencial (Data Publicação > InícioData > Acordo).
-def imputar_data_projeto(df: pd.DataFrame) -> pd.DataFrame:
+def impute_project_date(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     
     # 1. Trata 'acordoConvenioNumero' para extrair o ano
     # O Ano será preenchido como NaN se a extração falhar.
-    df['AnoAcordo'] = _extrair_ano_do_acordo(df['acordoConvenioNumero'])
+    df['AnoAcordo'] = _extract_agreement_year(df['acordoConvenioNumero'])
     
     # 2. Preenche os NaNs em 'Ano' com o 'Ano' de 'InícioData' (se InícioData for válida)
     # df['InícioData'].dt.year obtém o ano do objeto datetime.
@@ -90,7 +89,7 @@ def imputar_data_projeto(df: pd.DataFrame) -> pd.DataFrame:
     
     return df
 
-def agrupar_mensal(df: pd.DataFrame, ano: int) -> pd.DataFrame:
+def aggregate_monthly_data(df: pd.DataFrame, ano: int) -> pd.DataFrame:
     """
     Sums values by month (1..12) for the given year (Agency, Unit, IA-UPE).
     Ensures all 12 months are present, filling gaps with 0.0.
@@ -125,12 +124,11 @@ def calculate_annual_kpis(df_monthly: pd.DataFrame) -> dict:
         "ia_upe": float(df_monthly["valorIAUPE"].sum()) if "valorIAUPE" in df_monthly else 0.0,
     }
 
+# Formats float to simple BRL currency string (R$ 1.234,56).
 def to_brl(value: float) -> str:
-    # Formats float to simple BRL currency string (R$ 1.234,56).
-    formatted = f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    return f"R$ {formatted}"
+    return f"R$ {value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-def acordos_recentes(df: pd.DataFrame) -> pd.DataFrame:
+def get_recent_agreements(df: pd.DataFrame) -> pd.DataFrame:
     # Returns the top 5 projects sorted by inicioData (descending)
     return (
         df.copy()
@@ -138,10 +136,9 @@ def acordos_recentes(df: pd.DataFrame) -> pd.DataFrame:
         .head(5)
     )
 
-
 # -------- QUARTER AND SEMESTER ANALYSIS (BEGIN) ----------
 
-def agregar_acordos_por_periodo(df: pd.DataFrame) -> pd.DataFrame:
+def aggregate_agreements_by_period(df: pd.DataFrame) -> pd.DataFrame:
     
     # Generate consolidated DataFrame for tabular display (Quarter, Semester, Year)
     df_temp = df.copy()

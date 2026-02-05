@@ -3,14 +3,11 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 from data_utils import (
-    carregar_ultimo_backup_json,  # dinâmico!
-    normalizar_valores,
-    preparar_datas,
-    #imputar_data_projeto,
-    agregar_acordos_por_periodo
+    carregar_ultimo_backup_json,
+    normalize_values,
+    prepare_dates,
+    aggregate_agreements_by_period,
 )
-
-
 
 st.set_page_config(layout="wide")
 st.header("Análise Temporal de Acordos", divider="blue")
@@ -21,7 +18,6 @@ Esta análise temporal permite visualizar a distribuição dos acordos ao longo 
 
 
 # 1. CARREGAMENTO E LIMPEZA (dinâmico)
-import streamlit as st
 df = carregar_ultimo_backup_json()
 if df is None or (hasattr(df, 'empty') and df.empty):
     st.error("Backup não pôde ser carregado ou está vazio.")
@@ -32,9 +28,8 @@ if isinstance(df, list):
 if df.empty or 'dataPublicacao' not in df.columns:
     st.error("Dados inválidos ou coluna 'dataPublicacao' ausente no backup.")
     st.stop()
-df = normalizar_valores(df)
-df = preparar_datas(df)
-#df = imputar_data_projeto(df)
+df = normalize_values(df)
+df = prepare_dates(df)
 
 # Verifica se há dados para trabalhar
 if df.empty or 'inicioData' not in df.columns:
@@ -47,14 +42,14 @@ if df.empty or 'inicioData' not in df.columns:
 st.subheader("Mapa de Árvore (Treemap)")
 st.caption("Distribuição hierárquica: Ano > Semestre > Trimestre")
 
-df_dados_completos = agregar_acordos_por_periodo(df)
+df_aggregated = aggregate_agreements_by_period(df)
 
-if df_dados_completos is None or df_dados_completos.empty:
+if df_aggregated is None or df_aggregated.empty:
     st.error("Não há dados suficientes para gerar a análise temporal.")
     st.stop()
 
 # Filtra apenas as linhas de nível 'Trimestre' para o gráfico
-df_treemap = df_dados_completos[df_dados_completos['Trimestre'].str.contains('Trimestre', na=False)].copy()
+df_treemap = df_aggregated[df_aggregated['Trimestre'].str.contains('Trimestre', na=False)].copy()
 
 # Filtramos zeros ANTES de qualquer coisa para evitar o erro de divisão
 # Se Qtd Acordos for 0, o peso é 0 e quebra o cálculo da cor no treemap.
@@ -95,19 +90,19 @@ st.markdown("---")
 st.subheader("Tabela Detalhada por Período")
 
 # Criação da tabela
-df_tabela = agregar_acordos_por_periodo(df)
+df_table = aggregate_agreements_by_period(df)
 
-if not df_tabela.empty:
+if not df_table.empty:
     # Filtro Interativo
-    anos = sorted(df_tabela['Ano'].unique().tolist(), reverse=True)
-    ano_sel = st.selectbox("Filtrar por Ano:", ['Todos'] + anos)
+    available_years = sorted(df_table['Ano'].unique().tolist(), reverse=True)
+    selected_year = st.selectbox("Filtrar por Ano:", ['Todos'] + available_years)
 
-    if ano_sel != 'Todos':
-        df_tabela = df_tabela[df_tabela['Ano'] == ano_sel]
+    if selected_year != 'Todos':
+        df_table = df_table[df_table['Ano'] == selected_year]
 
     # Exibição da Tabela
     st.dataframe(
-        df_tabela,
+        df_table,
         column_config={
             "Ano": st.column_config.NumberColumn(format="%d"),
             "Período": st.column_config.TextColumn("Período"),
