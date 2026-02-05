@@ -10,15 +10,15 @@ PASTA_INPUT = Path(__file__).resolve().parents[1] / "input"
 
 # Configuração inicial da página
 # Define o título da aba do navegador e o layout como "wide" (tela cheia)
-st.set_page_config(page_title="Heatmap Comparativo", layout="wide")
+st.set_page_config(page_title="Comparative Heatmap", layout="wide")
 
 # Título principal da página
-st.header("Comparativo de Valores por Projeto e Mês", divider="blue")
+st.header("Comparison of Values by Project and Month", divider="blue")
 
 # Descrição da análise para o usuário
 st.info("""
 **Storytelling:**
-Esta análise apresenta um comparativo visual dos valores recebidos por projeto e por mês, facilitando a identificação de padrões, sazonalidades e projetos de maior relevância financeira ao longo do tempo.
+This analysis presents a visual comparison of the values received by project and by month, making it easier to identify patterns, seasonality, and projects of greater financial relevance over time.
 """)
 
 # Carrega os dados da pasta de entrada
@@ -38,9 +38,9 @@ projetos_disponiveis = sorted(df["nomeProjeto"].unique().tolist())  # Lista de p
 # Permite ao usuário filtrar os dados por ano e projeto
 col1, col2 = st.columns(2)
 with col1:
-    anos_sel = st.multiselect("Filtrar por Ano", anos_disponiveis, default=anos_disponiveis)
+    anos_sel = st.multiselect("Filter by Year", anos_disponiveis, default=anos_disponiveis)
 with col2:
-    projetos_sel = st.multiselect("Filtrar por Projeto (opcional)", projetos_disponiveis)
+    projetos_sel = st.multiselect("Filter by Year (optional)", projetos_disponiveis)
 
 # Aplica os filtros selecionados pelo usuário
 df_filtrado = filtrar_por_ano(df, anos_sel)  # Filtra pelos anos selecionados
@@ -88,5 +88,5 @@ st.plotly_chart(fig, width='stretch')
 
 # Exibe a tabela resumida abaixo do gráfico
 # A tabela mostra os mesmos dados do heatmap, mas em formato tabular
-st.subheader("Tabela Resumida")
+st.subheader("Summary Table")
 st.dataframe(tabela.style.format("R$ {:,.2f}"), width='stretch', height=400)

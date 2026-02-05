@@ -10,15 +10,15 @@ PASTA_INPUT = Path(__file__).resolve().parents[1] / "input"
 
 # Configuração inicial da página
 # Define o título da aba do navegador e o layout como "wide" (tela cheia)
-st.set_page_config(page_title="Somatório por Projeto", layout="wide")
+st.set_page_config(page_title="Project Totals", layout="wide")
 
 # Título principal da página
-st.header("Somatório dos Valores por Projeto", divider="blue")
+st.header("Total Values by Project", divider="blue")
 
 # Descrição da análise para o usuário
 st.info("""
 **Storytelling:**
-Esta análise mostra o somatório dos valores recebidos por cada projeto, permitindo identificar quais projetos são mais expressivos em termos de captação de recursos e auxiliando na priorização de esforços e investimentos.
+This analysis shows the total values received by each project, allowing you to identify which projects are the most significant in terms of fundraising and helping to prioritize efforts and investments.
 """)
 
 # Carrega os dados da pasta de entrada
@@ -37,9 +37,9 @@ anos_disponiveis = sorted(df["ano"].unique().tolist())
 # Permite ao usuário filtrar os dados por ano e buscar projetos pelo nome
 col1, col2 = st.columns([2, 3])
 with col1:
-    anos_sel = st.multiselect("Filtrar por Ano (opcional)", anos_disponiveis, default=anos_disponiveis)
+    anos_sel = st.multiselect("Filter by Year (optional)", anos_disponiveis, default=anos_disponiveis)
 with col2:
-    nome_filtro = st.text_input("Filtrar por nome do projeto (contém, opcional)", value="")
+    nome_filtro = st.text_input("Filter by Project Name (contains, optional)", value="")
 
 # Aplica os filtros selecionados pelo usuário
 df_filtrado = filtrar_por_ano(df, anos_sel)  # Filtra pelos anos selecionados
@@ -86,7 +86,7 @@ st.plotly_chart(fig, width='stretch')
 
 # Exibe uma tabela com o somatório por projeto
 # A tabela mostra os mesmos dados do gráfico, mas em formato tabular
-st.subheader("Tabela - Somatório por Projeto")
+st.subheader("Table - Project Totals")
 st.dataframe(
     soma_projeto[["nomeProjeto", "Total"]].style.format({"Total": "R$ {:,.2f}"}),  # Formata os valores como moeda
     width='stretch',

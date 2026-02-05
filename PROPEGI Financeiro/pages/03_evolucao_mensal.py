@@ -10,15 +10,15 @@ PASTA_INPUT = Path(__file__).resolve().parents[1] / "input"
 
 # Configuração inicial da página
 # Define o título da aba do navegador e o layout como "wide" (tela cheia)
-st.set_page_config(page_title="Evolução Mensal", layout="wide")
+st.set_page_config(page_title="Monthly Evolution", layout="wide")
 
 # Título principal da página
-st.header("Evolução Mensal do Valor Total", divider="blue")
+st.header("Monthly Evolution of Total Value", divider="blue")
 
 # Descrição da análise para o usuário
 st.info("""
 **Storytelling:**
-Esta análise apresenta a evolução mensal do valor total recebido, permitindo identificar tendências, sazonalidades e períodos de maior ou menor captação ao longo do tempo.
+This analysis presents the monthly evolution of the total value received, allowing you to identify trends, seasonality, and periods of higher or lower fundraising over time.
 """)
 
 # Carrega os dados da pasta de entrada
@@ -35,7 +35,7 @@ anos_disponiveis = sorted(df["ano"].unique().tolist())
 
 # Interface para seleção de filtros
 # Permite ao usuário filtrar os dados por ano
-anos_sel = st.multiselect("Filtrar por Ano (opcional)", anos_disponiveis, default=anos_disponiveis)
+anos_sel = st.multiselect("Filter by Year (optional)", anos_disponiveis, default=anos_disponiveis)
 
 # Aplica o filtro de ano selecionado pelo usuário
 df_filtrado = filtrar_por_ano(df, anos_sel)
@@ -89,7 +89,7 @@ st.plotly_chart(fig, width='stretch')
 
 # Exibe uma tabela com o total mensal
 # A tabela mostra os mesmos dados do gráfico, mas em formato tabular
-st.subheader("Tabela - Total Mensal (Todos os projetos)")
+st.subheader("Table - Monthly Totals (All projects)")
 st.dataframe(
     total_mensal[["AnoMes", "Total"]].style.format({"Total": "R$ {:,.2f}"}),  # Formata os valores como moeda
     width='stretch',

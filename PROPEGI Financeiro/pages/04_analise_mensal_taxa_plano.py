@@ -10,15 +10,15 @@ PASTA_INPUT = Path(__file__).resolve().parents[1] / "input"
 
 # Configuração inicial da página
 # Define o título da aba do navegador e o layout como "wide" (tela cheia)
-st.set_page_config(page_title="Análise Mensal - Taxa/Plano", layout="wide")
+st.set_page_config(page_title="Monthly Analysis - Fee/Work Plan", layout="wide")
 
 # Título principal da página
-st.header("Análise Mensal por Taxa e Plano de Trabalho", divider="blue")
+st.header("Monthly Analysis by Fee and Work Plan", divider="blue")
 
 # Descrição da análise para o usuário
 st.info("""
 **Storytelling:**
-Esta análise detalha a evolução mensal dos valores por tipo de taxa e plano de trabalho, permitindo identificar a contribuição de cada categoria ao longo do tempo e apoiar decisões de gestão financeira.
+This analysis details the monthly evolution of values by type of fee and work plan, allowing you to identify the contribution of each category over time and support financial management decisions.
 """)
 
 # Carrega os dados da pasta de entrada
@@ -38,9 +38,9 @@ projetos_disponiveis = sorted(df["nomeProjeto"].unique().tolist())  # Lista de p
 # Permite ao usuário filtrar os dados por ano e selecionar um projeto específico
 col1, col2 = st.columns(2)
 with col1:
-    anos_sel = st.multiselect("Filtrar por Ano", anos_disponiveis, default=anos_disponiveis)
+    anos_sel = st.multiselect("Filter by Year", anos_disponiveis, default=anos_disponiveis)
 with col2:
-    projeto_sel = st.selectbox("Selecionar Projeto", projetos_disponiveis)
+    projeto_sel = st.selectbox("Select Project", projetos_disponiveis)
 
 # Aplica os filtros selecionados pelo usuário
 df_filtrado = filtrar_por_ano(df, anos_sel)  # Filtra pelos anos selecionados
@@ -102,7 +102,7 @@ st.plotly_chart(fig, width='stretch')
 
 # Exibe uma tabela detalhada com os valores por mês e categoria
 # A tabela mostra os mesmos dados do gráfico, mas em formato tabular
-st.subheader("Tabela Detalhada")
+st.subheader("Detailed Table")
 tabela_pivot = mensal_categoria.pivot_table(
     index="mes",  # Índice da tabela: Mês
     columns="categoriaDoRecurso",  # Colunas: Categoria do recurso
