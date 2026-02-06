@@ -86,7 +86,7 @@ st.plotly_chart(fig, width='stretch')
 
 # Cards resumo
 _inject_css()
-st.subheader("❖ Resumo dos anos")
+st.subheader("Resumo dos anos")
 
 agencia_totals = float(df_group["valorAgencia"].sum())
 unidade_totals = float(df_group["valorUnidade"].sum())
