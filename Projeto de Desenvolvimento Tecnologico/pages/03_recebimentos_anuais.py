@@ -2,7 +2,7 @@ import streamlit as st
 import plotly.express as px
 
 from data_utils import (
-    carregar_ultimo_backup_json,
+    load_latest_backup_json,
     normalize_values,
     prepare_dates,
     to_brl,
@@ -50,7 +50,7 @@ Esta análise apresenta o total de recebimentos anuais dos projetos, permitindo 
 st.caption("Comparativo de quanto cada órgão recebeu em cada ano.")
 
 # Carregamento
-df = carregar_ultimo_backup_json()
+df = load_latest_backup_json()
 if df is None or (hasattr(df, 'empty') and df.empty):
     st.error("Backup não pôde ser carregado ou está vazio.")
     st.stop()

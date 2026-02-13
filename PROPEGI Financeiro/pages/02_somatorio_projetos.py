@@ -3,59 +3,59 @@ import streamlit as st
 import plotly.express as px
 
 # Importa funções utilitárias para carregar e filtrar os dados
-from data_utils import carregar_dados, filtrar_por_ano
+from data_utils import load_data, filter_by_year
 
 # Define o caminho da pasta de entrada onde os arquivos JSON estão armazenados
-PASTA_INPUT = Path(__file__).resolve().parents[1] / "input"
+INPUT_FOLDER = Path(__file__).resolve().parents[1] / "input"
 
 # Configuração inicial da página
 # Define o título da aba do navegador e o layout como "wide" (tela cheia)
-st.set_page_config(page_title="Project Totals", layout="wide")
+st.set_page_config(page_title="Somatório por Projeto", layout="wide")
 
 # Título principal da página
-st.header("Total Values by Project", divider="blue")
+st.header("Somatório dos Valores por Projeto", divider="blue")
 
 # Descrição da análise para o usuário
 st.info("""
 **Storytelling:**
-This analysis shows the total values received by each project, allowing you to identify which projects are the most significant in terms of fundraising and helping to prioritize efforts and investments.
+Esta análise mostra o somatório dos valores recebidos por cada projeto, permitindo identificar quais projetos são mais expressivos em termos de captação de recursos e auxiliando na priorização de esforços e investimentos.
 """)
 
 # Carrega os dados da pasta de entrada
 # Aqui, todos os arquivos JSON são carregados e combinados em um único DataFrame
 try:
-    df = carregar_dados(PASTA_INPUT)
+    df = load_data(INPUT_FOLDER)
 except Exception as e:
     # Exibe uma mensagem de erro e interrompe a execução se houver problemas ao carregar os dados
     st.error(f"Erro ao carregar dados: {e}")
     st.stop()
 
 # Cria uma lista de anos disponíveis para o filtro
-anos_disponiveis = sorted(df["ano"].unique().tolist())
+available_years = sorted(df["ano"].unique().tolist())
 
 # Interface para seleção de filtros
 # Permite ao usuário filtrar os dados por ano e buscar projetos pelo nome
 col1, col2 = st.columns([2, 3])
 with col1:
-    anos_sel = st.multiselect("Filter by Year (optional)", anos_disponiveis, default=anos_disponiveis)
+    selected_years = st.multiselect("Filtrar por Ano (opcional)", available_years, default=available_years)
 with col2:
-    nome_filtro = st.text_input("Filter by Project Name (contains, optional)", value="")
+    name_filter = st.text_input("Filtrar por nome do projeto (contém, opcional)", value="")
 
 # Aplica os filtros selecionados pelo usuário
-df_filtrado = filtrar_por_ano(df, anos_sel)  # Filtra pelos anos selecionados
-if nome_filtro.strip():
+df_filtered = filter_by_year(df, selected_years)  # Filtra pelos anos selecionados
+if name_filter.strip():
     # Filtra os projetos cujo nome contém o texto fornecido (case insensitive)
-    df_filtrado = df_filtrado[df_filtrado["nomeProjeto"].str.contains(nome_filtro, case=False, na=False)]
+    df_filtered = df_filtered[df_filtered["nomeProjeto"].str.contains(name_filter, case=False, na=False)]
 
 # Verifica se há dados após os filtros
-if df_filtrado.empty:
+if df_filtered.empty:
     # Exibe um aviso e interrompe a execução se não houver dados para os filtros escolhidos
     st.warning("Sem dados para os filtros escolhidos.")
     st.stop()
 
 # Agrupa os dados por projeto e calcula o somatório dos valores financeiros
-soma_projeto = (
-    df_filtrado.groupby("nomeProjeto", as_index=False)["valorFloat"]
+project_totals = (
+    df_filtered.groupby("nomeProjeto", as_index=False)["valorFloat"]
     .sum()  # Soma os valores financeiros por projeto
     .rename(columns={"valorFloat": "Total"})  # Renomeia a coluna para "Total"
     .sort_values("Total", ascending=True)  # Ordena os projetos pelo total (do menor para o maior)
@@ -64,7 +64,7 @@ soma_projeto = (
 # Cria um gráfico de barras horizontal usando Plotly Express
 # O gráfico mostra o total financeiro captado por cada projeto
 fig = px.bar(
-    soma_projeto,
+    project_totals,
     x="Total",  # Valores financeiros no eixo X
     y="nomeProjeto",  # Nomes dos projetos no eixo Y
     orientation="h",  # Gráfico horizontal
@@ -86,9 +86,9 @@ st.plotly_chart(fig, width='stretch')
 
 # Exibe uma tabela com o somatório por projeto
 # A tabela mostra os mesmos dados do gráfico, mas em formato tabular
-st.subheader("Table - Project Totals")
+st.subheader("Tabela - Somatório por Projeto")
 st.dataframe(
-    soma_projeto[["nomeProjeto", "Total"]].style.format({"Total": "R$ {:,.2f}"}),  # Formata os valores como moeda
+    project_totals[["nomeProjeto", "Total"]].style.format({"Total": "R$ {:,.2f}"}),  # Formata os valores como moeda
     width='stretch',
     height=450
 )

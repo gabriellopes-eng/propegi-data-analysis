@@ -3,53 +3,53 @@ import streamlit as st
 import plotly.express as px
 
 # Importa funções utilitárias para carregar e filtrar os dados
-from data_utils import carregar_dados, filtrar_por_ano
+from data_utils import load_data, filter_by_year
 
 # Define o caminho da pasta de entrada onde os arquivos JSON estão armazenados
-PASTA_INPUT = Path(__file__).resolve().parents[1] / "input"
+INPUT_FOLDER = Path(__file__).resolve().parents[1] / "input"
 
 # Configuração inicial da página
 # Define o título da aba do navegador e o layout como "wide" (tela cheia)
-st.set_page_config(page_title="Accumulated - Fee/Work Plan", layout="wide")
+st.set_page_config(page_title="Acumulado - Taxa/Plano", layout="wide")
 
 # Título principal da página
-st.header("Analysis of the Complete Period by Fee and Work Plan", divider="blue")
+st.header("Análise do Período Completo por Taxa e Plano de Trabalho", divider="blue")
 
 # Descrição da análise para o usuário
 st.info("""
 **Storytelling:**
-This analysis presents the accumulated values by type of fee and work plan over the entire period, providing a consolidated view of the main revenue sources and their evolution.
+Esta análise apresenta o acumulado dos valores por tipo de taxa e plano de trabalho ao longo de todo o período, permitindo uma visão consolidada das principais fontes de receita e sua evolução.
 """)
 
 # Carrega os dados da pasta de entrada
 # Aqui, todos os arquivos JSON são carregados e combinados em um único DataFrame
 try:
-    df = carregar_dados(PASTA_INPUT)
+    df = load_data(INPUT_FOLDER)
 except Exception as e:
     # Exibe uma mensagem de erro e interrompe a execução se houver problemas ao carregar os dados
     st.error(f"Erro ao carregar dados: {e}")
     st.stop()
 
 # Cria uma lista de anos disponíveis para o filtro
-anos_disponiveis = sorted(df["ano"].unique().tolist())
+available_years = sorted(df["ano"].unique().tolist())
 
 # Interface para seleção de filtros
 # Permite ao usuário filtrar os dados por ano
-anos_sel = st.multiselect("Filter by Year (optional)", anos_disponiveis, default=anos_disponiveis)
+selected_years = st.multiselect("Filtrar por Ano (opcional)", available_years, default=available_years)
 
 # Aplica o filtro de ano selecionado pelo usuário
-df_filtrado = filtrar_por_ano(df, anos_sel)
+df_filtered = filter_by_year(df, selected_years)
 
 # Verifica se há dados após os filtros
-if df_filtrado.empty:
+if df_filtered.empty:
     # Exibe um aviso e interrompe a execução se não houver dados para os filtros escolhidos
-    st.warning("No data available for the selected filters.")
+    st.warning("Sem dados para os filtros escolhidos.")
     st.stop()
 
 # Agrupa os dados por projeto e categoria do recurso
 # Isso gera o total acumulado para cada projeto e categoria
-acumulado_categoria = (
-    df_filtrado.groupby(["nomeProjeto", "categoriaDoRecurso"], as_index=False)["valorFloat"]
+category_summary = (
+    df_filtered.groupby(["nomeProjeto", "categoriaDoRecurso"], as_index=False)["valorFloat"]
     .sum()  # Soma os valores financeiros por projeto e categoria
     .rename(columns={"valorFloat": "Total"})  # Renomeia a coluna para "Total"
 )
@@ -57,7 +57,7 @@ acumulado_categoria = (
 # Cria um gráfico de barras agrupadas usando Plotly Express
 # O gráfico mostra os valores acumulados por projeto e categoria
 fig = px.bar(
-    acumulado_categoria,
+    category_summary,
     x="nomeProjeto",  # Nome do projeto no eixo X
     y="Total",  # Total financeiro no eixo Y
     color="categoriaDoRecurso",  # Agrupa as barras por categoria
@@ -93,8 +93,8 @@ st.plotly_chart(fig, width='stretch')
 
 # Exibe uma tabela detalhada com os valores acumulados por projeto e categoria
 # A tabela mostra os mesmos dados do gráfico, mas em formato tabular
-st.subheader("Detailed Table - Accumulated Values")
-tabela_pivot = acumulado_categoria.pivot_table(
+st.subheader("Tabela Detalhada - Valores Acumulados")
+tabela_pivot = category_summary.pivot_table(
     index="nomeProjeto",  # Índice da tabela: Nome do projeto
     columns="categoriaDoRecurso",  # Colunas: Categoria do recurso
     values="Total",  # Valores: Total financeiro

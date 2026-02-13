@@ -26,7 +26,7 @@ with st.sidebar:
 # Mostra uma análise visual comparativa em formato de mapa de calor
 analysis1 = st.Page(
     page="pages/01_heatmap_comparativo.py",
-    title="Comparative Heatmap",
+    title="Heatmap Comparativo",
     icon="🌡️",
     default=True,  # Define esta página como a padrão ao abrir o aplicativo
 )
@@ -35,7 +35,7 @@ analysis1 = st.Page(
 # Exibe o total acumulado de projetos, provavelmente agrupados por categorias ou períodos
 analysis2 = st.Page(
     page="pages/02_somatorio_projetos.py",
-    title="Project Totals",
+    title="Somatório por Projeto",
     icon="📊",
 )
 
@@ -43,7 +43,7 @@ analysis2 = st.Page(
 # Mostra a evolução dos dados financeiros ao longo dos meses
 analysis3 = st.Page(
     page="pages/03_evolucao_mensal.py",
-    title="Monthly Evolution",
+    title="Evolução Mensal",
     icon="📈",
 )
 
@@ -51,7 +51,7 @@ analysis3 = st.Page(
 # Analisa taxas e planos mensalmente, útil para identificar tendências ou padrões
 analysis4 = st.Page(
     page="pages/04_analise_mensal_taxa_plano.py",
-    title="Monthly Analysis - Fee/Work Plan",
+    title="Análise Mensal - Taxa/Plano",
     icon="📑",
 )
 
@@ -59,7 +59,7 @@ analysis4 = st.Page(
 # Exibe o acumulado de taxas e planos, provavelmente para análises de longo prazo
 analysis5 = st.Page(
     page="pages/05_acumulado_taxa_plano.py",
-    title="Accumulated - Fee/Work Plan",
+    title="Acumulado - Taxa/Plano",
     icon="🗂️",
 )
 

@@ -2,11 +2,11 @@ import pandas as pd
 import numpy as np
 import itertools
 from requests_github import (
-    listar_backups_disponiveis,
-    carregar_backup_json,
-    carregar_todos_os_backups,
-    obter_metadata_ultimo_backup,
-    carregar_ultimo_backup_json,
+    list_available_backups,
+    load_backup_json,
+    load_all_backups,
+    get_latest_backup_metadata,
+    load_latest_backup_json,
 )
 
 
@@ -136,31 +136,31 @@ def get_recent_agreements(df: pd.DataFrame) -> pd.DataFrame:
         .head(5)
     )
 
-# -------- QUARTER AND SEMESTER ANALYSIS (BEGIN) ----------
+# -------- ANÁLISE PARA TRIMESTRE E SEMESTRE (INÍCIO) ----------
 
 def aggregate_agreements_by_period(df: pd.DataFrame) -> pd.DataFrame:
     
-    # Generate consolidated DataFrame for tabular display (Quarter, Semester, Year)
+    # Gera um DataFrame consolidado para exibição em TABELA (Trimestre, Semestre e Ano)
     df_temp = df.copy()
 
-    # Safety check: Return empty if date column is missing or invalid
+    # Retorna vazio caso a coluna de data não exista ou contenha valores inválidos
     if 'inicioData' not in df_temp.columns or not pd.api.types.is_datetime64_any_dtype(df_temp['inicioData']):
         print("Error: 'inicioData' column missing or invalid format.")
         return pd.DataFrame() 
     
-    # Drop rows with missing essential values
+    # Remoção de nulos
     df_temp = df_temp.dropna(subset=['inicioData', 'nomeProjeto']).copy()
 
     if df_temp.empty:
         return pd.DataFrame()
     
-    # Create time-based columns
+    # Criação de colunas temporais
     df_temp['Ano'] = df_temp['inicioData'].dt.year.astype(int)
     df_temp['Trimestre'] = df_temp['inicioData'].dt.quarter.astype(int).astype(str) + 'º Trimestre'
     df_temp['Semestre'] = np.where(df_temp['inicioData'].dt.month <= 6, '1º Semestre', '2º Semestre')
 
     years = sorted(df_temp['Ano'].unique())
-    # Defines the exact order in the table
+    # Definindo a ordem exata da tabela
     period_hierarchy = [
         'Total Ano',
         '1º Semestre',
@@ -176,11 +176,11 @@ def aggregate_agreements_by_period(df: pd.DataFrame) -> pd.DataFrame:
         names_list = serie.sort_values().astype(str).tolist()
         return '; '.join(names_list) if names_list else '-'
 
-    # Aggregation Dictionary
+    # Dicionário de Agregação
     agg_dict = {'nomeProjeto': [('Qtd Acordos', 'count'), ('Nomes dos Projetos', list_names)]}
     frames = []
 
-    # --- 1. QUARTERLY LEVEL ---
+    # --- 1. NÍVEL TRIMESTRAL ---
     quarters = ['1º Trimestre', '2º Trimestre', '3º Trimestre', '4º Trimestre']
     df_skeleton = pd.DataFrame(index=pd.MultiIndex.from_product([years, quarters], names=['Ano', 'Trimestre'])).reset_index()
     
@@ -194,7 +194,7 @@ def aggregate_agreements_by_period(df: pd.DataFrame) -> pd.DataFrame:
     df_final_trim['Período'] = df_final_trim['Trimestre']
     frames.append(df_final_trim)
 
-    # --- 2. SEMESTER LEVEL ---
+    # --- 2. NÍVEL SEMESTRAL ---
     semestres = ['1º Semestre', '2º Semestre']
     df_skeleton_sem = pd.DataFrame(index=pd.MultiIndex.from_product([years, semestres], names=['Ano', 'Semestre'])).reset_index()
     
@@ -207,7 +207,7 @@ def aggregate_agreements_by_period(df: pd.DataFrame) -> pd.DataFrame:
     df_final_sem['Trimestre'] = '-'
     frames.append(df_final_sem)
 
-   # --- 3. ANNUAL LEVEL ---
+   # --- 3. NÍVEL ANUAL ---
     df_year = df_temp.groupby(['Ano']).agg(agg_dict).reset_index()
     df_year.columns = ['Ano', 'Qtd Acordos', 'Nomes dos Projetos']
     df_year['Período'] = 'Total Ano'
@@ -215,25 +215,25 @@ def aggregate_agreements_by_period(df: pd.DataFrame) -> pd.DataFrame:
     df_year['Trimestre'] = '-'
     frames.append(df_year)
 
-    # Concatenate and sort
+    # Concatena e ordena
     df_final = pd.concat(frames, ignore_index=True)
     
-    # Fill missing values
+    # Preenche vazios
     df_final['Qtd Acordos'] = df_final['Qtd Acordos'].fillna(0).astype(int)
     df_final['Nomes dos Projetos'] = df_final['Nomes dos Projetos'].fillna('-')
 
-    # Converts 'Period' to a Category with a defined order
+    # Transforma 'Período' em uma Categoria com ordem definida em 'period_hierarchy'
     df_final['Período'] = pd.Categorical(
         df_final['Período'], 
         categories=period_hierarchy, 
         ordered=True
     )
 
-    # Pandas automatically sorts based on the 'period_hierarchy' list
+    # O Pandas ordena automaticamente baseado na lista 'period_hierarchy'
     df_final = df_final.sort_values(by=['Ano', 'Período'], ascending=[False, True])
 
     final_columns = ['Ano', 'Período', 'Semestre', 'Trimestre', 'Qtd Acordos', 'Nomes dos Projetos']
     
     return df_final[final_columns]
 
-# -------- QUARTER AND SEMESTER ANALYSIS (END) ----------
+# -------- ANÁLISE PARA TRIMESTRE E SEMESTRE (FINAL) ----------

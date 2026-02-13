@@ -3,57 +3,57 @@ import streamlit as st
 import plotly.express as px
 
 # Importa funções utilitárias para carregar e filtrar os dados
-from data_utils import carregar_dados, filtrar_por_ano
+from data_utils import load_data, filter_by_year
 
 # Define o caminho da pasta de entrada onde os arquivos JSON estão armazenados
-PASTA_INPUT = Path(__file__).resolve().parents[1] / "input"
+INPUT_FOLDER = Path(__file__).resolve().parents[1] / "input"
 
 # Configuração inicial da página
 # Define o título da aba do navegador e o layout como "wide" (tela cheia)
-st.set_page_config(page_title="Monthly Evolution", layout="wide")
+st.set_page_config(page_title="Evolução Mensal", layout="wide")
 
 # Título principal da página
-st.header("Monthly Evolution of Total Value", divider="blue")
+st.header("Evolução Mensal do Valor Total", divider="blue")
 
 # Descrição da análise para o usuário
 st.info("""
 **Storytelling:**
-This analysis presents the monthly evolution of the total value received, allowing you to identify trends, seasonality, and periods of higher or lower fundraising over time.
+Esta análise apresenta a evolução mensal do valor total recebido, permitindo identificar tendências, sazonalidades e períodos de maior ou menor captação ao longo do tempo.
 """)
 
 # Carrega os dados da pasta de entrada
 # Aqui, todos os arquivos JSON são carregados e combinados em um único DataFrame
 try:
-    df = carregar_dados(PASTA_INPUT)
+    df = load_data(INPUT_FOLDER)
 except Exception as e:
     # Exibe uma mensagem de erro e interrompe a execução se houver problemas ao carregar os dados
     st.error(f"Erro ao carregar dados: {e}")
     st.stop()
 
 # Cria uma lista de anos disponíveis para o filtro
-anos_disponiveis = sorted(df["ano"].unique().tolist())
+available_years = sorted(df["ano"].unique().tolist())
 
 # Interface para seleção de filtros
 # Permite ao usuário filtrar os dados por ano
-anos_sel = st.multiselect("Filter by Year (optional)", anos_disponiveis, default=anos_disponiveis)
+selected_years = st.multiselect("Filtrar por Ano (opcional)", available_years, default=available_years)
 
 # Aplica o filtro de ano selecionado pelo usuário
-df_filtrado = filtrar_por_ano(df, anos_sel)
+df_filtered = filter_by_year(df, selected_years)
 
 # Verifica se há dados após os filtros
-if df_filtrado.empty:
+if df_filtered.empty:
     # Exibe um aviso e interrompe a execução se não houver dados para os filtros escolhidos
     st.warning("Sem dados para os filtros escolhidos.")
     st.stop()
 
 # Cria uma coluna "AnoMes" para exibição no formato "2025-Jan"
 # Essa coluna será usada para organizar os dados no gráfico e na tabela
-df_filtrado["AnoMes"] = df_filtrado["ano"].astype(str) + "-" + df_filtrado["mes"]
+df_filtered["AnoMes"] = df_filtered["ano"].astype(str) + "-" + df_filtered["mes"]
 
 # Agrupa os dados por mês e soma os valores de todos os projetos
 # Isso gera o total financeiro mensal para todos os projetos combinados
-total_mensal = (
-    df_filtrado.groupby(["AnoMes", "numeroMes", "ano"], as_index=False)["valorFloat"]
+monthly_totals = (
+    df_filtered.groupby(["AnoMes", "numeroMes", "ano"], as_index=False)["valorFloat"]
     .sum()  # Soma os valores financeiros por mês
     .rename(columns={"valorFloat": "Total"})  # Renomeia a coluna para "Total"
     .sort_values(["ano", "numeroMes"])  # Ordena os dados por ano e número do mês
@@ -62,7 +62,7 @@ total_mensal = (
 # Cria um gráfico de barras usando Plotly Express
 # O gráfico mostra a evolução mensal do valor total recebido
 fig = px.bar(
-    total_mensal,
+    monthly_totals,
     x="AnoMes",  # Mês/Ano no eixo X
     y="Total",  # Total financeiro no eixo Y
     text="Total",  # Exibe os valores diretamente nas barras
@@ -89,9 +89,9 @@ st.plotly_chart(fig, width='stretch')
 
 # Exibe uma tabela com o total mensal
 # A tabela mostra os mesmos dados do gráfico, mas em formato tabular
-st.subheader("Table - Monthly Totals (All projects)")
+st.subheader("Tabela - Total Mensal (Todos os projetos)")
 st.dataframe(
-    total_mensal[["AnoMes", "Total"]].style.format({"Total": "R$ {:,.2f}"}),  # Formata os valores como moeda
+    monthly_totals[["AnoMes", "Total"]].style.format({"Total": "R$ {:,.2f}"}),  # Formata os valores como moeda
     width='stretch',
     height=450
 )

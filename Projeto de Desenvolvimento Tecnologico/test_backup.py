@@ -1,19 +1,19 @@
 import re
 import requests
 import pandas as pd
-from data_utils import listar_backups_disponiveis, carregar_backup_json
+from data_utils import list_available_backups, load_backup_json
 
 # Utilitários para testes e validação 
 def carregar_json_url(url: str):
     """Carrega um JSON remoto e retorna um DataFrame pandas."""
-    resposta = requests.get(url)
-    resposta.raise_for_status()
-    return pd.DataFrame(resposta.json())
+    response = requests.get(url)
+    response.raise_for_status()
+    return pd.DataFrame(response.json())
 
 def get_url_padrao():
     """Retorna a URL do último backup disponível no GitHub."""
-    from data_utils import obter_metadata_ultimo_backup
-    meta = obter_metadata_ultimo_backup()
+    from data_utils import get_latest_backup_metadata
+    meta = get_latest_backup_metadata()
     return meta.get("download_url")
 
 def get_latest_backup_url():
@@ -76,17 +76,17 @@ if __name__ == "__main__":
 
     print("\nTestando seleção de backup específico:")
     try:
-        backups = listar_backups_disponiveis()
+        backups = list_available_backups()
         print("Backups disponíveis:")
         for idx, b in enumerate(backups):
             print(f"[{idx}] {b['nome_arquivo']} (data: {b['data_backup']})")
-        escolha = input("Selecione o número do backup desejado: ")
-        idx = int(escolha)
-        nome_arquivo = backups[idx]["nome_arquivo"]
-        dados = carregar_backup_json(nome_arquivo)
-        print(f"Tipo dos dados: {type(dados)}")
-        print(f"Quantidade de registros: {len(dados)}")
-        if len(dados) > 0:
+        choice = input("Selecione o número do backup desejado: ")
+        idx = int(choice)
+        filename = backups[idx]["nome_arquivo"]
+        data = load_backup_json(filename)
+        print(f"Tipo dos dados: {type(data)}")
+        print(f"Quantidade de registros: {len(data)}")
+        if len(data) > 0:
             print("")
             print("Primeiro registro do backup selecionado:")
             print(df.iloc[0])

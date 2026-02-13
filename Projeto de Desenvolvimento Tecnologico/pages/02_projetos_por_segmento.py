@@ -3,7 +3,7 @@ import plotly.express as px
 import pandas as pd
 
 from data_utils import (
-  carregar_ultimo_backup_json,
+  load_latest_backup_json,
   prepare_dates,
   impute_project_date,
   get_recent_agreements,
@@ -21,7 +21,7 @@ st.caption("Visualização da quantidade de projetos por segmento em cada ano.")
 
 # Carregamento dinâmico
 import streamlit as st
-df = carregar_ultimo_backup_json()
+df = load_latest_backup_json()
 if df is None or (hasattr(df, 'empty') and df.empty):
   st.error("Backup não pôde ser carregado ou está vazio.")
   st.stop()

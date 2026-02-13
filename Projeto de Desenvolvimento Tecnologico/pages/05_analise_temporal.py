@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 from data_utils import (
-    carregar_ultimo_backup_json,
+    load_latest_backup_json,
     normalize_values,
     prepare_dates,
     aggregate_agreements_by_period,
@@ -18,7 +18,7 @@ Esta análise temporal permite visualizar a distribuição dos acordos ao longo 
 
 
 # 1. CARREGAMENTO E LIMPEZA (dinâmico)
-df = carregar_ultimo_backup_json()
+df = load_latest_backup_json()
 if df is None or (hasattr(df, 'empty') and df.empty):
     st.error("Backup não pôde ser carregado ou está vazio.")
     st.stop()

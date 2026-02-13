@@ -3,7 +3,7 @@ import plotly.express as px
 import numpy as np
 
 from data_utils import (
-    carregar_ultimo_backup_json, 
+    load_latest_backup_json, 
     normalize_values,
     prepare_dates,
     aggregate_monthly_data,
@@ -51,7 +51,7 @@ Esta análise apresenta a evolução dos recebimentos mensais dos projetos de de
 """)
 
 # Carregar e preparar dados (backup dinâmico)
-df = carregar_ultimo_backup_json()
+df = load_latest_backup_json()
 if df is None or (hasattr(df, 'empty') and df.empty):
     st.error("Backup não pôde ser carregado ou está vazio.")
     st.stop()
